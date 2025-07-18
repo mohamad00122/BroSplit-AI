@@ -1,0 +1,19 @@
+{
+  "name": "brosplit-ai",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.js",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.0.1",
+    "express": "^5.1.0",
+    "nodemailer": "^7.0.4",
+    "openai": "^5.8.2",
+    "pdfkit": "^0.17.1",
+    "stripe": "^18.3.0"
+  },
+  "devDependencies": {
+    "connect-history-api-fallback": "^2.0.0"
+  }
+}

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>This AI Just Exposed Why 90% of Gym Bros Never Get Jacked</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 80%, #ff6b6b 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, #4ecdc4 0%, transparent 50%),
+                  radial-gradient(circle at 40% 40%, #45b7d1 0%, transparent 50%);
+      opacity: 0.1;
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .breaking-news {
+      background: linear-gradient(135deg, #ff6b6b, #ff5252);
+      color: white;
+      padding: 0.5rem 1rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      text-transform: uppercase;
+      animation: pulse 2s infinite;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .header h1 {
+      font-size: 3.5rem;
+      font-weight: 900;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .header .subtitle {
+      font-size: 1.4rem;
+      color: #e0e0e0;
+      margin-bottom: 2rem;
+      font-weight: 500;
+    }
+
+    .social-proof {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .social-proof .stat {
+      text-align: center;
+    }
+
+    .social-proof .stat .number {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #ff6b6b;
+      display: block;
+    }
+
+    .social-proof .stat .label {
+      font-size: 0.9rem;
+      color: #a0a0a0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .urgency-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 107, 107, 0.1);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      color: #ff6b6b;
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 3rem;
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { box-shadow: 0 0 20px rgba(255, 107, 107, 0.3); }
+      to { box-shadow: 0 0 30px rgba(255, 107, 107, 0.6); }
+    }
+
+    .fear-section {
+      background: rgba(255, 107, 107, 0.05);
+      border: 1px solid rgba(255, 107, 107, 0.2);
+      padding: 2rem;
+      border-radius: 16px;
+      margin-bottom: 3rem;
+      text-align: center;
+    }
+
+    .fear-section h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #ff6b6b;
+    }
+
+    .fear-section p {
+      font-size: 1.1rem;
+      color: #e0e0e0;
+      margin-bottom: 1.5rem;
+    }
+
+    .fear-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .fear-item {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 3px solid #ff6b6b;
+      text-align: left;
+    }
+
+    .solution-section {
+      background: rgba(76, 205, 196, 0.05);
+      border: 1px solid rgba(76, 205, 196, 0.2);
+      padding: 2rem;
+      border-radius: 16px;
+      margin-bottom: 3rem;
+      text-align: center;
+    }
+
+    .solution-section h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #4ecdc4;
+    }
+
+    .testimonials {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin: 3rem 0;
+    }
+
+    .testimonial {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .testimonial .quote {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      font-style: italic;
+      color: #e0e0e0;
+    }
+
+    .testimonial .author {
+      font-weight: 600;
+      color: #4ecdc4;
+      font-size: 0.9rem;
+    }
+
+    .testimonial .result {
+      color: #ff6b6b;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .form-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 3rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .form-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .form-header h3 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    .form-header p {
+      color: #a0a0a0;
+      font-size: 1.1rem;
+    }
+
+    .form-section {
+      margin-bottom: 2rem;
+    }
+
+    .form-section h4 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-weight: 500;
+      color: #e0e0e0;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 1rem 1.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+
+    .form-group input::placeholder {
+      color: #666;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #ff6b6b;
+      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .strength-section {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 2rem;
+      border-radius: 16px;
+      margin-top: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .strength-section h4 {
+      color: #fff;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+    }
+
+    .strength-section p {
+      color: #a0a0a0;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .strength-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .strength-input {
+      position: relative;
+    }
+
+    .strength-input input {
+      padding-right: 3rem;
+    }
+
+    .strength-input::after {
+      content: 'lbs';
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .submit-button {
+      width: 100%;
+      padding: 1.5rem 2rem;
+      background: linear-gradient(135deg, #ff6b6b, #ff5252);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 1.3rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2rem;
+    }
+
+    .submit-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+    }
+
+    .guarantee {
+      background: rgba(76, 175, 80, 0.1);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    .guarantee h4 {
+      color: #4caf50;
+      margin-bottom: 0.5rem;
+    }
+
+    .scarcity {
+      background: rgba(255, 193, 7, 0.1);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      text-align: center;
+      color: #ffc107;
+      font-weight: 600;
+    }
+
+    .error-message {
+      background: rgba(244, 67, 54, 0.1);
+      color: #ff6b6b;
+      padding: 1rem;
+      border-radius: 12px;
+      margin: 1rem 0;
+      border: 1px solid rgba(244, 67, 54, 0.2);
+    }
+
+    .loading-message {
+      background: rgba(33, 150, 243, 0.1);
+      color: #4ecdc4;
+      padding: 1rem;
+      border-radius: 12px;
+      margin: 1rem 0;
+      border: 1px solid rgba(33, 150, 243, 0.2);
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+      
+      .header h1 {
+        font-size: 2.5rem;
+      }
+      
+      .form-card {
+        padding: 2rem;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .social-proof {
+        gap: 1rem;
+      }
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
+    /* Custom select styling */
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23666' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 0.5rem center;
+      background-repeat: no-repeat;
+      background-size: 1.5em 1.5em;
+      padding-right: 2.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-gradient"></div>
+  
+  <div class="container">
+    <div class="breaking-news">
+      🚨 BREAKING: New AI Study Reveals the #1 Reason Most Gym Bros Stay Weak
+    </div>
+
+    <div class="header">
+      <h1>This AI Just Exposed Why 90% of Gym Bros Never Get Jacked</h1>
+      <p class="subtitle">The shocking truth about cookie-cutter programs that's keeping you small (and the 6-week solution that's already transformed 12,847 lifters)</p>
+      
+      <div class="social-proof">
+        <div class="stat">
+          <span class="number">12,847</span>
+          <span class="label">Bros Transformed</span>
+        </div>
+        <div class="stat">
+          <span class="number">89%</span>
+          <span class="label">Saw Gains Week 1</span>
+        </div>
+        <div class="stat">
+          <span class="number">4.9★</span>
+          <span class="label">Average Rating</span>
+        </div>
+      </div>
+      
+      <div class="urgency-badge">
+        <span>⚡</span>
+        <span>Limited Time: Only $5 (Usually $47)</span>
+      </div>
+    </div>
+
+    <div class="fear-section">
+      <h2>⚠️ Are You Making These Deadly Gym Mistakes?</h2>
+      <p>Every day you follow a generic program, you're actually moving BACKWARDS. Here's what's sabotaging your gains:</p>
+      <div class="fear-list">
+        <div class="fear-item">
+          <strong>❌ Following Instagram Influencer Routines</strong><br>
+          Their genetics ≠ Your genetics
+        </div>
+        <div class="fear-item">
+          <strong>❌ Using Cookie-Cutter Programs</strong><br>
+          One size fits none
+        </div>
+        <div class="fear-item">
+          <strong>❌ Ignoring Your Weak Points</strong><br>
+          Your bench will always suck
+        </div>
+        <div class="fear-item">
+          <strong>❌ Random Volume & Intensity</strong><br>
+          Spinning your wheels forever
+        </div>
+      </div>
+    </div>
+
+    <div class="solution-section">
+      <h2>🤖 The BroSplit AI Revolution</h2>
+      <p>While other guys are still copying routines from 2019 YouTube videos, smart lifters are using AI to create programs that actually work for THEIR body, THEIR goals, and THEIR life.</p>
+    </div>
+
+    <div class="testimonials">
+      <div class="testimonial">
+        <div class="quote">"Bro, I've been lifting for 3 years and got more gains in 6 weeks with this AI program than the entire previous year. My bench finally broke through that plateau."</div>
+        <div class="author">- Jake M., 24</div>
+        <div class="result">+35lbs bench, +50lbs squat</div>
+      </div>
+      <div class="testimonial">
+        <div class="quote">"As a busy dad, I needed something that actually worked with my schedule. This AI nailed it. My wife keeps asking what I'm doing different."</div>
+        <div class="author">- Marcus T., 31</div>
+        <div class="result">Lost 18lbs, gained muscle</div>
+      </div>
+      <div class="testimonial">
+        <div class="quote">"Finally, a program that doesn't ignore my shoulder injury. The AI worked around it perfectly and I'm stronger than ever."</div>
+        <div class="author">- Alex R., 28</div>
+        <div class="result">PR'd every lift safely</div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-header">
+        <h3>🔥 Get Your Custom BroSplit Now</h3>
+        <p>Join the thousands who've already unlocked their genetic potential</p>
+      </div>
+      
+      <div class="scarcity">
+        ⏰ 2,847 people got their custom plan this week. Don't be the one still doing generic routines.
+      </div>
+      
+      <form id="planForm" autocomplete="off">
+        <div class="form-section">
+          <h4>💪 Your Training Setup</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>
+                <span>📅</span>
+                How many days can you commit?
+              </label>
+              <select name="daysPerWeek" required>
+                <option value="">Choose your frequency...</option>
+                <option value="3">3 Days (Minimum for gains)</option>
+                <option value="4">4 Days (Sweet spot)</option>
+                <option value="5">5 Days (Serious gains)</option>
+                <option value="6">6 Days (Beast mode)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <span>🏋️</span>
+                What's your gym situation?
+              </label>
+              <select name="equipment" required>
+                <option value="">Select your setup...</option>
+                <option value="commercial-gym">Full Gym Access (Best gains)</option>
+                <option value="home-dumbbells">Home Dumbbells (Still effective)</option>
+                <option value="body-weight">Bodyweight Only (We'll work with it)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <span>📊</span>
+                How long have you been lifting?
+              </label>
+              <select name="experience" required>
+                <option value="">Be honest...</option>
+                <option value="beginner">Beginner (0-1 years)</option>
+                <option value="intermediate">Intermediate (1-3 years)</option>
+                <option value="advanced">Advanced (3+ years)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <span>🎯</span>
+                What's your #1 goal right now?
+              </label>
+              <input type="text" name="goal" required placeholder="build bigger arms, lose the gut, get jacked">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h4>👤 Tell Us About You</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>
+                <span>📧</span>
+                Email (where we'll send your plan)
+              </label>
+              <input type="email" name="email" required placeholder="youremail@example.com">
+            </div>
+
+            <div class="form-group">
+              <label>
+                <span>🎂</span>
+                Age
+              </label>
+              <input type="number" name="age" min="13" max="80" required placeholder="25">
+            </div>
+
+            <div class="form-group">
+              <label>
+                <span>⚧</span>
+                Sex
+              </label>
+              <select name="sex" required>
+                <option value="">Select...</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <span>⚖️</span>
+                Current weight
+              </label>
+              <input type="number" name="bodyweight" min="80" max="400" placeholder="170">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h4>🎛️ Customization (This is where the magic happens)</h4>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>
+                <span>💪</span>
+                What needs the most work?
+              </label>
+              <input type="text" name="focusMuscle" placeholder="arms, chest, back, legs">
+            </div>
+
+            <div class="form-group">
+              <label>
+                <span>🩹</span>
+                Any injuries we should know about?
+              </label>
+              <input type="text" name="injuries" placeholder="bad shoulder, knee issues">
+            </div>
+
+            <div class="form-group">
+              <label>
+                <span>❌</span>
+                Exercises you absolutely hate?
+              </label>
+              <input type="text" name="dislikes" placeholder="burpees, lunges, cardio">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="strength-section">
+            <h4>💪 Current Strength (Optional but recommended)</h4>
+            <p>Help us dial in your starting weights perfectly. Skip if you're not sure.</p>
+            <div class="strength-grid">
+              <div class="form-group">
+                <label>Bench Press Max</label>
+                <div class="strength-input">
+                  <input type="number" name="bench" placeholder="225">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Squat Max</label>
+                <div class="strength-input">
+                  <input type="number" name="squat" placeholder="315">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Deadlift Max</label>
+                <div class="strength-input">
+                  <input type="number" name="deadlift" placeholder="405">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Overhead Press Max</label>
+                <div class="strength-input">
+                  <input type="number" name="ohp" placeholder="135">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="error"></div>
+        <div id="loading"></div>
+        
+        <button type="submit" id="buyBtn" class="submit-button">
+          🚀 Get My Custom BroSplit • $5
+        </button>
+
+        <div class="guarantee">
+          <h4>💯 No-BS Guarantee</h4>
+          <p>If you don't see noticeable gains in the first 2 weeks, we'll refund every penny. Your custom plan will be in your inbox within 5 minutes.</p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:4000";
+    
+    document.getElementById('planForm').onsubmit = async (e) => {
+      e.preventDefault();
+      
+      const buyBtn = document.getElementById('buyBtn');
+      const errorDiv = document.getElementById('error');
+      const loadingDiv = document.getElementById('loading');
+      
+      buyBtn.disabled = true;
+      buyBtn.classList.add('pulse');
+      errorDiv.innerHTML = "";
+      loadingDiv.innerHTML = '<div class="loading-message">🔄 Creating your custom plan...</div>';
+
+      // Gather all fields
+      let formData = Object.fromEntries(new FormData(e.target));
+      formData.email = formData.email.trim().toLowerCase();
+      formData.injuries = formData.injuries ? formData.injuries.split(',').map(x => x.trim()).filter(Boolean) : [];
+      formData.dislikes = formData.dislikes ? formData.dislikes.split(',').map(x => x.trim()).filter(Boolean) : [];
+      formData.lifts = {
+        bench: formData.bench || null,
+        squat: formData.squat || null,
+        deadlift: formData.deadlift || null,
+        ohp: formData.ohp || null
+      };
+      delete formData.bench; delete formData.squat; delete formData.deadlift; delete formData.ohp;
+
+      // Save for use on the success page
+      localStorage.setItem('brosplitForm', JSON.stringify(formData));
+
+      try {
+        const res = await fetch(`${API_URL}/api/checkout`, { method: 'POST' });
+        if (!res.ok) throw new Error("Could not start payment.");
+        const { url } = await res.json();
+        window.location = url;
+      } catch (err) {
+        errorDiv.innerHTML = `<div class="error-message">⚠️ Error: ${err.message || "Could not connect to backend."}</div>`;
+        loadingDiv.innerHTML = "";
+      }
+      
+      buyBtn.disabled = false;
+      buyBtn.classList.remove('pulse');
+    };
+
+    // Enhanced interactive feedback
+    document.querySelectorAll('input, select').forEach(element => {
+      element.addEventListener('focus', function() {
+        this.style.transform = 'scale(1.02)';
+      });
+      
+      element.addEventListener('blur', function() {
+        this.style.transform = 'scale(1)';
+      });
+    });
+  </script>
+</body>
+</html>

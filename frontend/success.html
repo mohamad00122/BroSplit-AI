@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BroSplit AI — Your Plan Is Ready</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    .bg-gradient {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 80%, #ff6b6b 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, #4ecdc4 0%, transparent 50%),
+                  radial-gradient(circle at 40% 40%, #45b7d1 0%, transparent 50%);
+      opacity: 0.1;
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: slideDown 0.8s ease-out;
+    }
+
+    .header h1 {
+      font-size: 3.5rem;
+      font-weight: 900;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .header .subtitle {
+      font-size: 1.2rem;
+      color: #e0e0e0;
+      font-weight: 400;
+    }
+
+    .success-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 3rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+      animation: slideUp 0.8s ease-out 0.2s both;
+    }
+
+    .success-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: left 0.8s ease;
+    }
+
+    .success-card:hover::before {
+      left: 100%;
+    }
+
+    .success-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #4ecdc4;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .success-icons {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+
+    .success-icon {
+      font-size: 4rem;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+      animation: bounce 2s infinite;
+    }
+
+    .success-icon:nth-child(2) { animation-delay: 0.2s; }
+    .success-icon:nth-child(3) { animation-delay: 0.4s; }
+
+    .success-description {
+      font-size: 1.2rem;
+      color: #e0e0e0;
+      margin-bottom: 2rem;
+      font-weight: 400;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 1rem 2.5rem;
+      border: none;
+      border-radius: 16px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #ff6b6b, #ff5252);
+      color: white;
+      box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .loading-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 3rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      margin: 2rem 0;
+      animation: slideUp 0.6s ease-out;
+    }
+
+    .loading-title {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+
+    .loading-description {
+      font-size: 1.1rem;
+      color: #e0e0e0;
+      margin-bottom: 2rem;
+    }
+
+    .loading-icons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .loading-icon {
+      font-size: 3rem;
+      animation: pulse 1.5s infinite;
+    }
+
+    .loading-icon:nth-child(2) { animation-delay: 0.3s; }
+    .loading-icon:nth-child(3) { animation-delay: 0.6s; }
+
+    .progress-container {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 107, 107, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 2rem 0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(135deg, #ff6b6b, #ff5252);
+      border-radius: 4px;
+      animation: loading 3s ease-in-out infinite;
+    }
+
+    .plan-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 3rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      margin-bottom: 2rem;
+      animation: slideUp 0.8s ease-out;
+    }
+
+    .plan-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .plan-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+
+    .plan-subtitle {
+      font-size: 1.1rem;
+      color: #e0e0e0;
+      font-weight: 400;
+    }
+
+    #plan {
+      background: rgba(255, 255, 255, 0.95);
+      color: #2d3748;
+      border-radius: 16px;
+      padding: 2.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 1rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    #plan h1 {
+      color: #2d3748;
+      font-size: 2.2rem;
+      font-weight: 800;
+      text-align: center;
+      margin: 0 0 2rem 0;
+      padding: 1.5rem 0;
+      border-bottom: 3px solid #ff6b6b;
+      background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    #plan h2 {
+      color: #2d3748;
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin: 2.5rem 0 1.5rem 0;
+      padding: 1rem 1.5rem;
+      background: linear-gradient(135deg, #f7fafc, #edf2f7);
+      border-radius: 12px;
+      border-left: 4px solid #ff6b6b;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    #plan h3 {
+      color: #4ecdc4;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 1.5rem 0 1rem 0;
+      padding: 0.8rem 0;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    #plan ul, #plan ol {
+      padding-left: 0;
+      margin-bottom: 2rem;
+      list-style: none;
+    }
+
+    #plan li {
+      margin-bottom: 0.8rem;
+      padding: 1rem 1.5rem;
+      background: rgba(255,255,255,0.9);
+      border-radius: 12px;
+      border-left: 4px solid #4ecdc4;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    #plan li:hover {
+      background: rgba(255,255,255,1);
+      transform: translateX(8px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+
+    #plan p {
+      margin: 1.5rem 0;
+      padding: 1.5rem;
+      background: rgba(255,255,255,0.9);
+      border-radius: 12px;
+      border-left: 4px solid #ff6b6b;
+      font-size: 1rem;
+      line-height: 1.6;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      max-width: 100%;
+      box-sizing: border-box;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    #plan hr {
+      margin: 3rem 0;
+      border: none;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #ff6b6b, transparent);
+    }
+
+    .error-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 3rem;
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      margin: 2rem 0;
+      animation: slideUp 0.6s ease-out;
+    }
+
+    .error-title {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #ff6b6b;
+      margin-bottom: 1rem;
+    }
+
+    .error-description {
+      font-size: 1.1rem;
+      color: #e0e0e0;
+      margin-bottom: 2rem;
+    }
+
+    .guarantee {
+      background: rgba(76, 175, 80, 0.1);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    .guarantee h4 {
+      color: #4caf50;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.7; }
+    }
+
+    @keyframes loading {
+      0% { width: 0%; }
+      50% { width: 80%; }
+      100% { width: 100%; }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+      
+      .header h1 {
+        font-size: 2.5rem;
+      }
+      
+      .success-card {
+        padding: 2rem;
+      }
+      
+      .success-title {
+        font-size: 2rem;
+      }
+      
+      .success-icons {
+        gap: 1rem;
+      }
+      
+      .success-icon {
+        font-size: 3rem;
+      }
+      
+      .button-group {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .plan-card {
+        padding: 2rem;
+      }
+      
+      #plan {
+        padding: 1.5rem;
+        font-size: 0.9rem;
+      }
+      
+      #plan h1 {
+        font-size: 1.8rem;
+      }
+      
+      #plan h2 {
+        font-size: 1.2rem;
+        padding: 0.8rem 1rem;
+      }
+    }
+
+    /* Success animation */
+    .celebrate {
+      animation: celebrate 0.8s ease-out;
+    }
+
+    @keyframes celebrate {
+      0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
+      50% { transform: scale(1.05) rotate(2deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-gradient"></div>
+
+  <div class="container">
+    <div class="header">
+      <h1>BroSplit AI</h1>
+      <p class="subtitle">Your personalized workout plan is ready</p>
+    </div>
+
+    <div class="success-card celebrate">
+      <h2 class="success-title">🎉 Payment Complete!</h2>
+      <div class="success-icons">
+        <span class="success-icon">✅</span>
+        <span class="success-icon">💳</span>
+        <span class="success-icon">🔥</span>
+      </div>
+      <p class="success-description">You're ready to generate your personalized Bro Split plan!</p>
+      <div class="button-group">
+        <button id="generatePlan" class="btn btn-primary">
+          🚀 Generate My Plan
+        </button>
+        <a href="index.html" class="btn btn-secondary">
+          ← Back to Start
+        </a>
+      </div>
+    </div>
+
+    <div id="planLoading"></div>
+    <div id="planError"></div>
+
+    <div id="planContainer" class="plan-card" style="display: none;">
+      <div class="plan-header">
+        <h2 class="plan-title">🏋️‍♂️ Your Custom Workout Plan</h2>
+        <p class="plan-subtitle">Tailored specifically for your goals and preferences</p>
+      </div>
+      <div id="plan"></div>
+      
+      <div class="guarantee">
+        <h4>💯 No-BS Guarantee</h4>
+        <p>If you don't see noticeable gains in the first 2 weeks, we'll refund every penny.</p>
+      </div>
+    </div>
+
+    <!-- Email button appears only after plan generation -->
+    <div style="text-align: center;">
+      <button id="emailPlan" class="btn btn-primary" style="display: none; margin: 1rem auto;">
+        📧 Email Me My Plan
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    const API_URL = "http://localhost:4000";
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    
+    if (!sessionId) {
+      document.body.innerHTML = `
+        <div class="bg-gradient"></div>
+        <div class="container">
+          <div class="error-card">
+            <h2 class="error-title">⚠️ Error: No session ID found</h2>
+            <p class="error-description">Please return to the homepage and try again.</p>
+            <a href="index.html" class="btn btn-primary">← Back to Start</a>
+          </div>
+        </div>`;
+      throw new Error("No session_id in URL");
+    }
+
+    let formData = {};
+    try { 
+      formData = JSON.parse(localStorage.getItem('brosplitForm') || '{}'); 
+    } catch(e) { 
+      console.error("Parsing form data:", e); 
+    }
+
+    const generateBtn = document.getElementById('generatePlan');
+    const emailBtn = document.getElementById('emailPlan');
+    const planDiv = document.getElementById('plan');
+    const planError = document.getElementById('planError');
+    const planLoading = document.getElementById('planLoading');
+    const planCard = document.getElementById('planContainer');
+
+    generateBtn.addEventListener('click', async () => {
+      // Reset state
+      planDiv.innerHTML = "";
+      planError.innerHTML = "";
+      planCard.style.display = "none";
+      emailBtn.style.display = "none";
+      generateBtn.disabled = true;
+
+      planLoading.innerHTML = `
+        <div class="loading-card">
+          <div class="loading-icons">
+            <span class="loading-icon">🤖</span>
+            <span class="loading-icon">💭</span>
+            <span class="loading-icon">🏋️</span>
+          </div>
+          <h3 class="loading-title">Generating your personalized plan...</h3>
+          <p class="loading-description">Our AI is analyzing your preferences and creating the perfect workout split for you!</p>
+          <div class="progress-container"><div class="progress-bar"></div></div>
+        </div>`;
+
+      try {
+        const res = await fetch(`${API_URL}/api/generate-plan`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, ...formData })
+        });
+        
+        if (!res.ok) throw new Error("Could not generate plan");
+        const { plan } = await res.json();
+
+        planLoading.innerHTML = `
+          <div class="loading-card" style="background: rgba(76, 205, 196, 0.1); border-color: rgba(76, 205, 196, 0.3);">
+            <h3 class="loading-title" style="color: #4ecdc4;">✅ Plan Generated Successfully!</h3>
+            <p class="loading-description" style="color: #4ecdc4;">Your personalized workout plan is ready!</p>
+          </div>`;
+
+        planDiv.innerHTML = marked.parse(plan);
+        planCard.style.display = "block";
+        emailBtn.style.display = "block";
+        planCard.scrollIntoView({ behavior: 'smooth' });
+
+        // Clear form data after successful generation
+        localStorage.removeItem('brosplitForm');
+        
+      } catch (err) {
+        planError.innerHTML = `
+          <div class="error-card">
+            <h3 class="error-title">⚠️ Generation Failed</h3>
+            <p class="error-description">${err.message || "Could not generate plan."}</p>
+            <button onclick="location.reload()" class="btn btn-primary" style="margin-top:1rem">🔄 Try Again</button>
+          </div>`;
+      } finally {
+        planLoading.innerHTML = "";
+        generateBtn.disabled = false;
+      }
+    });
+
+    emailBtn.addEventListener('click', async () => {
+      emailBtn.disabled = true;
+      emailBtn.innerHTML = '⏳ Sending...';
+      
+      try {
+        const resp = await fetch(`${API_URL}/api/email-plan`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.email,
+            plan: document.getElementById('plan').innerText
+          })
+        });
+        
+        if (!resp.ok) throw new Error("Failed to send email");
+        
+        emailBtn.innerHTML = '✅ Sent!';
+        setTimeout(() => {
+          emailBtn.innerHTML = '📧 Email Me My Plan';
+        }, 3000);
+        
+      } catch (err) {
+        emailBtn.innerHTML = '❌ Failed';
+        alert("⚠️ " + err.message);
+        setTimeout(() => {
+          emailBtn.innerHTML = '📧 Email Me My Plan';
+        }, 3000);
+      } finally {
+        emailBtn.disabled = false;
+      }
+    });
+
+    // Remove celebration animation after it completes
+    setTimeout(() => {
+      document.querySelectorAll('.celebrate').forEach(el => {
+        el.classList.remove('celebrate');
+      });
+    }, 800);
+
+    // Intersection observer for scroll animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.animation = 'slideUp 0.6s ease-out forwards';
+        }
+      });
+    }, { 
+      threshold: 0.1, 
+      rootMargin: '0px 0px -50px 0px' 
+    });
+
+    document.querySelectorAll('.plan-card, .loading-card, .error-card').forEach(el => {
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>
