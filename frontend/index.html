@@ -313,16 +313,37 @@
 
     .strength-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
     }
 
     .strength-input {
       position: relative;
+      display: flex;
+      flex-direction: column;
     }
 
     .strength-input input {
-      padding-right: 3rem;
+      padding: 1rem 3.5rem 1rem 1.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .strength-input input:focus {
+      outline: none;
+      border-color: #ff6b6b;
+      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .strength-input input::placeholder {
+      color: #666;
     }
 
     .strength-input::after {
@@ -333,6 +354,21 @@
       transform: translateY(-50%);
       color: #666;
       font-size: 0.9rem;
+      pointer-events: none;
+      z-index: 1;
+      margin-top: 0.75rem;
+    }
+
+    .strength-input .form-group label,
+    .strength-section .form-group label {
+      font-weight: 500;
+      color: #e0e0e0;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      white-space: nowrap;
     }
 
     .submit-button {
@@ -420,6 +456,26 @@
       
       .social-proof {
         gap: 1rem;
+      }
+
+      .strength-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .strength-input {
+        min-width: unset;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .strength-input::after {
+        right: 0.75rem;
+        font-size: 0.8rem;
+      }
+      
+      .strength-input input {
+        padding-right: 3rem;
       }
     }
 
