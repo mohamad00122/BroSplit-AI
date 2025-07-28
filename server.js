@@ -126,7 +126,7 @@ function generateEnhancedPDF(planText, userProfile = {}) {
 
   // 2. Draw logo in vertical center
   const logoPath  = path.join(__dirname, 'assets', 'BroSplitLogo.png');
-  const logoWidth = 250;  // increased size for bigger logo
+  const logoWidth = 300;  // increased size for bigger logo
   const logoX     = (width - logoWidth) / 2;
   const logoY     = (height / 2) - (logoWidth / 2);
   try {
@@ -152,7 +152,7 @@ function generateEnhancedPDF(planText, userProfile = {}) {
 
   // ─── Pro Tips Section ───────────────────────────────────────────────────────
   applyStyle(styles.heading2);
-  doc.text('Ready to Get Started?');
+  doc.text('Pro Tips');
   rule();
   applyStyle(styles.body);
   [
@@ -199,7 +199,7 @@ function generateEnhancedPDF(planText, userProfile = {}) {
 
   // ─── Footer Page ─────────────────────────────────────────────────────────────
   applyStyle(styles.heading2);
-  doc.text('🚀 Ready to Get Started?');
+  doc.text('Ready to Get Started?');
   rule();
   applyStyle(styles.body);
   doc.text(
