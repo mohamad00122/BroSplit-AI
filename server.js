@@ -6,10 +6,17 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import PDFDocument from "pdfkit";
 import nodemailer from "nodemailer";
+import fs from "fs";
 import Stripe from "stripe";
 import OpenAI from "openai";
 import dotenv from "dotenv";
 import { makePrompt } from "./prompt.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// —— ESM __dirname shim ————————————————————————————————————————————————
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
 
 dotenv.config();
 
@@ -78,7 +85,7 @@ function generateEnhancedPDF(planText, userProfile = {}) {
     size: "A4",
     margins: { top: 50, bottom: 50, left: 50, right: 50 }
   });
-  const { width } = doc.page;
+  const { width, height } = doc.page;
 
   // Typography styles
   const styles = {
@@ -88,22 +95,12 @@ function generateEnhancedPDF(planText, userProfile = {}) {
     small:    { font: 'Helvetica',      size: 9,  color: '#6b7280' }
   };
 
-  // Color palette
-  const palette = {
-    primary: '#1f2937',
-    accent:  '#2563eb',
-    highlight:'#059669',
-    neutral: '#6b7280'
-  };
-
-  // Helper: apply a named text style
   function applyStyle(style) {
     doc.font(style.font)
        .fontSize(style.size)
        .fillColor(style.color);
   }
 
-  // Draw a subtle horizontal rule
   function rule() {
     doc.moveDown(0.5);
     doc.strokeColor('#e5e7eb')
@@ -114,7 +111,9 @@ function generateEnhancedPDF(planText, userProfile = {}) {
     doc.moveDown(0.5);
   }
 
-  // Cover Page
+  // ─── Cover Page ──────────────────────────────────────────────────────────────
+
+  // 1. Render cover text at top
   applyStyle(styles.heading1);
   doc.text('Your Personal 6-Week BroSplit Journey', { align: 'center' });
   doc.moveDown(1);
@@ -124,13 +123,22 @@ function generateEnhancedPDF(planText, userProfile = {}) {
     align: 'center', lineGap: styles.body.lineGap
   });
   doc.moveDown(2);
-  doc.text(
-    'This plan is tailored for your goals, experience, and equipment. Let\'s get started!',
-    { align: 'center', width: width - 100 }
-  );
+
+  // 2. Draw logo in vertical center
+  const logoPath  = path.join(__dirname, 'assets', 'BroSplitLogo.png');
+  const logoWidth = 250;  // increased size for bigger logo
+  const logoX     = (width - logoWidth) / 2;
+  const logoY     = (height / 2) - (logoWidth / 2);
+  try {
+    const logoBuffer = fs.readFileSync(logoPath);
+    doc.image(logoBuffer, logoX, logoY, { width: logoWidth });
+  } catch (err) {
+    console.warn('⚠️ Could not load logo:', err.message);
+  }
+
   doc.addPage();
 
-  // Table of Contents
+  // ─── Table of Contents ───────────────────────────────────────────────────────
   applyStyle(styles.heading2);
   doc.text('Table of Contents', { align: 'left' });
   doc.moveDown(0.5);
@@ -142,9 +150,9 @@ function generateEnhancedPDF(planText, userProfile = {}) {
   ].forEach((item, i) => doc.text(`${i+1}. ${item}`));
   doc.addPage();
 
-  // Pro Tips Section
+  // ─── Pro Tips Section ───────────────────────────────────────────────────────
   applyStyle(styles.heading2);
-  doc.text('💡 Pro Tips');
+  doc.text('Ready to Get Started?');
   rule();
   applyStyle(styles.body);
   [
@@ -156,7 +164,7 @@ function generateEnhancedPDF(planText, userProfile = {}) {
   ].forEach(tip => doc.text(`• ${tip}`, { indent: 20 }));
   doc.addPage();
 
-  // Parse plan text into structured weeks/days
+  // ─── Parse and Render Weeks ──────────────────────────────────────────────────
   const lines = planText.replace(/\*\*/g, '').split(/\r?\n/).map(l => l.trim());
   const weeks = [];
   let currentWeek = null, currentDay = null;
@@ -175,14 +183,13 @@ function generateEnhancedPDF(planText, userProfile = {}) {
     }
   });
 
-  // Render each week
   weeks.slice(0, 6).forEach(week => {
     applyStyle(styles.heading2);
-    doc.text(`Week ${week.number}`, { continued: false });
+    doc.text(`Week ${week.number}`);
     rule();
     week.days.forEach(day => {
       applyStyle(styles.heading1);
-      doc.text(day.name, { continued: false });
+      doc.text(day.name);
       applyStyle(styles.body);
       day.exercises.forEach(ex => doc.text(`• ${ex}`, { indent: 20 }));
       doc.moveDown(1);
@@ -190,17 +197,17 @@ function generateEnhancedPDF(planText, userProfile = {}) {
     doc.addPage();
   });
 
-  // Footer Page
+  // ─── Footer Page ─────────────────────────────────────────────────────────────
   applyStyle(styles.heading2);
   doc.text('🚀 Ready to Get Started?');
   rule();
   applyStyle(styles.body);
   doc.text(
-    'This plan was crafted for YOU. Consistency is key. Track photos, log workouts, and don’t skip recovery. Let’s crush it!',
+    "This plan was crafted for YOU. Consistency is key. Track photos, log workouts, and don't skip recovery. Let's crush it!",
     { width: width - 100 }
   );
 
-  // Page numbering
+  // ─── Page Numbering ──────────────────────────────────────────────────────────
   doc.flushPages();
   const range = doc.bufferedPageRange();
   for (let i = 0; i < range.count; i++) {
@@ -213,7 +220,7 @@ function generateEnhancedPDF(planText, userProfile = {}) {
   return doc;
 }
 
-// ─── 4. Email Endpoint with PDF attachment ──────────────────────────────────────
+// ─── 4. Email Endpoint with PDF Attachment ─────────────────────────────────────
 class EmailService {
   constructor() {
     this.transporter = nodemailer.createTransport({
@@ -227,10 +234,7 @@ class EmailService {
   async sendWorkoutPlan(email, plan, userProfile = {}) {
     const doc = generateEnhancedPDF(plan, userProfile);
     const buffer = await new Promise((resolve, reject) => {
-      const bufs = [];
-      doc.on('data', chunk => bufs.push(chunk));
-      doc.on('end', () => resolve(Buffer.concat(bufs)));
-      doc.on('error', reject);
+      const bufs = []; doc.on('data', chunk => bufs.push(chunk)); doc.on('end', () => resolve(Buffer.concat(bufs))); doc.on('error', reject);
     });
 
     return this.transporter.sendMail({
