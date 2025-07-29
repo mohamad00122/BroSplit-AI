@@ -7,12 +7,23 @@ import cors from "cors";
 import PDFDocument from "pdfkit";
 import nodemailer from "nodemailer";
 import fs from "fs";
+import fsPromises from "fs/promises";
 import Stripe from "stripe";
 import OpenAI from "openai";
 import dotenv from "dotenv";
 import { makePrompt } from "./prompt.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import admin from "firebase-admin";
+
+const serviceAccount = JSON.parse(
+  await fsPromises.readFile('./firebaseServiceAccount.json', 'utf8')
+);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+const db = admin.firestore();
 
 // —— ESM __dirname shim ————————————————————————————————————————————————
 const __filename = fileURLToPath(import.meta.url);
@@ -87,7 +98,6 @@ function generateEnhancedPDF(planText, userProfile = {}) {
   });
   const { width, height } = doc.page;
 
-  // Typography styles
   const styles = {
     heading1: { font: 'Helvetica-Bold', size: 24, color: '#2563eb' },
     heading2: { font: 'Helvetica-Bold', size: 18, color: '#1f2937' },
@@ -111,9 +121,6 @@ function generateEnhancedPDF(planText, userProfile = {}) {
     doc.moveDown(0.5);
   }
 
-  // ─── Cover Page ──────────────────────────────────────────────────────────────
-
-  // 1. Render cover text at top
   applyStyle(styles.heading1);
   doc.text('Your Personal 6-Week BroSplit Journey', { align: 'center' });
   doc.moveDown(1);
@@ -124,9 +131,8 @@ function generateEnhancedPDF(planText, userProfile = {}) {
   });
   doc.moveDown(2);
 
-  // 2. Draw logo in vertical center
   const logoPath  = path.join(__dirname, 'assets', 'BroSplitLogo.png');
-  const logoWidth = 300;  // increased size for bigger logo
+  const logoWidth = 500;
   const logoX     = (width - logoWidth) / 2;
   const logoY     = (height / 2) - (logoWidth / 2);
   try {
@@ -138,7 +144,6 @@ function generateEnhancedPDF(planText, userProfile = {}) {
 
   doc.addPage();
 
-  // ─── Table of Contents ───────────────────────────────────────────────────────
   applyStyle(styles.heading2);
   doc.text('Table of Contents', { align: 'left' });
   doc.moveDown(0.5);
@@ -150,7 +155,6 @@ function generateEnhancedPDF(planText, userProfile = {}) {
   ].forEach((item, i) => doc.text(`${i+1}. ${item}`));
   doc.addPage();
 
-  // ─── Pro Tips Section ───────────────────────────────────────────────────────
   applyStyle(styles.heading2);
   doc.text('Pro Tips');
   rule();
@@ -164,7 +168,6 @@ function generateEnhancedPDF(planText, userProfile = {}) {
   ].forEach(tip => doc.text(`• ${tip}`, { indent: 20 }));
   doc.addPage();
 
-  // ─── Parse and Render Weeks ──────────────────────────────────────────────────
   const lines = planText.replace(/\*\*/g, '').split(/\r?\n/).map(l => l.trim());
   const weeks = [];
   let currentWeek = null, currentDay = null;
@@ -197,7 +200,6 @@ function generateEnhancedPDF(planText, userProfile = {}) {
     doc.addPage();
   });
 
-  // ─── Footer Page ─────────────────────────────────────────────────────────────
   applyStyle(styles.heading2);
   doc.text('Ready to Get Started?');
   rule();
@@ -207,7 +209,6 @@ function generateEnhancedPDF(planText, userProfile = {}) {
     { width: width - 100 }
   );
 
-  // ─── Page Numbering ──────────────────────────────────────────────────────────
   doc.flushPages();
   const range = doc.bufferedPageRange();
   for (let i = 0; i < range.count; i++) {
@@ -220,7 +221,7 @@ function generateEnhancedPDF(planText, userProfile = {}) {
   return doc;
 }
 
-// ─── 4. Email Endpoint with PDF Attachment ─────────────────────────────────────
+// ─── 4. Email Endpoint with Firestore Collection ───────────────────────────────
 class EmailService {
   constructor() {
     this.transporter = nodemailer.createTransport({
@@ -253,6 +254,15 @@ app.post('/api/email-plan', async (req, res) => {
     if (!email || !plan) {
       return res.status(400).json({ error: 'Email and plan are required' });
     }
+
+    // 🔥 Save email to Firestore
+    const timestamp = new Date().toISOString();
+    await db.collection('emails').add({
+      email,
+      timestamp,
+      planSummary: plan.slice(0, 200)
+    });
+
     const emailService = new EmailService();
     await emailService.sendWorkoutPlan(email, plan, userProfile);
     res.json({ success: true });
