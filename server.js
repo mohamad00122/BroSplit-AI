@@ -16,24 +16,28 @@ import path from "path";
 import { fileURLToPath } from "url";
 import admin from "firebase-admin";
 
-const serviceAccount = JSON.parse(
-  await fsPromises.readFile('./firebaseServiceAccount.json', 'utf8')
-);
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-const db = admin.firestore();
-
 // —— ESM __dirname shim ————————————————————————————————————————————————
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
 dotenv.config();
 
+// Initialize Firebase Admin
+const serviceAccount = JSON.parse(
+  await fsPromises.readFile(path.join(__dirname, 'firebaseServiceAccount.json'), 'utf8')
+);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+const db = admin.firestore();
+
+// Create Express app
 const app = express();
 app.use(bodyParser.json());
 app.use(cors({ origin: "*", credentials: true }));
+
+// ─── Serve Frontend Static Files ───────────────────────────────────────────────
+app.use(express.static(path.join(__dirname, 'frontend')));
 
 // ─── 1. Stripe Checkout Endpoint ───────────────────────────────────────────────
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -250,21 +254,17 @@ class EmailService {
 
 app.post('/api/email-plan', async (req, res) => {
   try {
-    const { email, plan, userProfile = {} } = req.body;
-    if (!email || !plan) {
+    const { 이메일, plan, userProfile = {} } = req.body;
+    if (!이메일 || !plan) {
       return res.status(400).json({ error: 'Email and plan are required' });
     }
 
     // 🔥 Save email to Firestore
     const timestamp = new Date().toISOString();
-    await db.collection('emails').add({
-      email,
-      timestamp,
-      planSummary: plan.slice(0, 200)
-    });
+    await db.collection('emails').add({ 이메일, timestamp, planSummary: plan.slice(0, 200) });
 
     const emailService = new EmailService();
-    await emailService.sendWorkoutPlan(email, plan, userProfile);
+    await emailService.sendWorkoutPlan(이메일, plan, userProfile);
     res.json({ success: true });
   } catch (err) {
     console.error(err);
@@ -277,6 +277,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ─── 6. Start Server ───────────────────────────────────────────────────────────
-const PORT = process.env.PORT || 4000;
+// ─── 6. Catch-all Frontend Route ───────────────────────────────────────────────
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+});
+
+// ─── 7. Start Server ───────────────────────────────────────────────────────────
+const PORT = process.env.PORT || 80;
 app.listen(PORT, () => console.log(`🚀 Server listening on :${PORT}`));
