@@ -249,19 +249,29 @@ class EmailService {
 }
 
 app.post('/api/email-plan', async (req, res) => {
+  // 🔥 DEBUG LOGS
+  console.log('▶ [email-plan] req.body:', req.body);
+  console.log('▶ [email-plan] SMTP creds loaded:', {
+    user: !!process.env.SMTP_USER,
+    pass: !!process.env.SMTP_PASS
+  });
+
+  const { email, plan, userProfile = {} } = req.body;
+  if (!email || !plan) {
+    console.warn('↩ 400 missing email or plan');
+    return res.status(400).json({ error: 'Email and plan are required' });
+  }
+
   try {
-    const { email, plan, userProfile = {} } = req.body;
-    if (!email || !plan) {
-      return res.status(400).json({ error: 'Email and plan are required' });
-    }
     const emailService = new EmailService();
     await emailService.sendWorkoutPlan(email, plan, userProfile);
     res.json({ success: true });
   } catch (err) {
-    console.error(err);
+    console.error('✖ [email-plan] send error:', err);
     res.status(500).json({ error: 'Email delivery failed' });
   }
 });
+
 
 // ─── 5. Health Check Endpoint ──────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
