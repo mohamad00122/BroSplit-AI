@@ -1,7 +1,16 @@
 // File: server.js
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+// ─── ESM __dirname shim ────────────────────────────────────────────────────────
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
+
+// ─── Load .env from this file’s directory ───────────────────────────────────────
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 // ─── Imports & Configuration ──────────────────────────────────────────────────
-import 'dotenv/config';
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -14,10 +23,6 @@ import dotenv from "dotenv";
 import { makePrompt } from "./prompt.js";
 import path from "path";
 import { fileURLToPath } from "url";
-
-// —— ESM __dirname shim ————————————————————————————————————————————————
-const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
 
 dotenv.config();
 
