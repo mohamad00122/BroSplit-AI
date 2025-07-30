@@ -756,14 +756,14 @@
 
         <div class="guarantee">
           <h4>💯 No-BS Guarantee</h4>
-          <p>If you don't see noticeable gains in the first 2 weeks, we'll refund every penny. Your custom plan will be in your inbox within 5 minutes.</p>
+          <p>If you don't see noticeable gains in the first 30 days, we'll refund every penny. Your custom plan will be in your inbox within 5 minutes.</p>
         </div>
       </form>
     </div>
   </div>
 
   <script>
-    const API_URL = "http://localhost:4000";
+    const API_URL = window.location.origin;
     
     document.getElementById('planForm').onsubmit = async (e) => {
       e.preventDefault();
@@ -780,21 +780,32 @@
       // Gather all fields
       let formData = Object.fromEntries(new FormData(e.target));
       formData.email = formData.email.trim().toLowerCase();
-      formData.injuries = formData.injuries ? formData.injuries.split(',').map(x => x.trim()).filter(Boolean) : [];
-      formData.dislikes = formData.dislikes ? formData.dislikes.split(',').map(x => x.trim()).filter(Boolean) : [];
+      formData.injuries = formData.injuries
+        ? formData.injuries.split(',').map(x => x.trim()).filter(Boolean)
+        : [];
+      formData.dislikes = formData.dislikes
+        ? formData.dislikes.split(',').map(x => x.trim()).filter(Boolean)
+        : [];
       formData.lifts = {
         bench: formData.bench || null,
         squat: formData.squat || null,
         deadlift: formData.deadlift || null,
         ohp: formData.ohp || null
       };
-      delete formData.bench; delete formData.squat; delete formData.deadlift; delete formData.ohp;
+      delete formData.bench;
+      delete formData.squat;
+      delete formData.deadlift;
+      delete formData.ohp;
 
       // Save for use on the success page
       localStorage.setItem('brosplitForm', JSON.stringify(formData));
 
       try {
-        const res = await fetch(`${API_URL}/api/checkout`, { method: 'POST' });
+        const res = await fetch(`${API_URL}/api/checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
         if (!res.ok) throw new Error("Could not start payment.");
         const { url } = await res.json();
         window.location = url;
@@ -807,15 +818,10 @@
       buyBtn.classList.remove('pulse');
     };
 
-    // Enhanced interactive feedback
-    document.querySelectorAll('input, select').forEach(element => {
-      element.addEventListener('focus', function() {
-        this.style.transform = 'scale(1.02)';
-      });
-      
-      element.addEventListener('blur', function() {
-        this.style.transform = 'scale(1)';
-      });
+    // Interactive focus/blur feedback (unchanged)
+    document.querySelectorAll('input, select').forEach(el => {
+      el.addEventListener('focus', () => el.style.transform = 'scale(1.02)');
+      el.addEventListener('blur',  () => el.style.transform = 'scale(1)');
     });
   </script>
 </body>
