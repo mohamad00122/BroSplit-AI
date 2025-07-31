@@ -1,16 +1,7 @@
 // File: server.js
-import path from 'path';
-import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
-
-// ─── ESM __dirname shim ────────────────────────────────────────────────────────
-const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
-
-// ─── Load .env from this file’s directory ───────────────────────────────────────
-dotenv.config({ path: path.join(__dirname, '.env') });
 
 // ─── Imports & Configuration ──────────────────────────────────────────────────
+import 'dotenv/config';
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -23,6 +14,10 @@ import dotenv from "dotenv";
 import { makePrompt } from "./prompt.js";
 import path from "path";
 import { fileURLToPath } from "url";
+
+// —— ESM __dirname shim ————————————————————————————————————————————————
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
 
 dotenv.config();
 
@@ -254,29 +249,19 @@ class EmailService {
 }
 
 app.post('/api/email-plan', async (req, res) => {
-  // 🔥 DEBUG LOGS
-  console.log('▶ [email-plan] req.body:', req.body);
-  console.log('▶ [email-plan] SMTP creds loaded:', {
-    user: !!process.env.SMTP_USER,
-    pass: !!process.env.SMTP_PASS
-  });
-
-  const { email, plan, userProfile = {} } = req.body;
-  if (!email || !plan) {
-    console.warn('↩ 400 missing email or plan');
-    return res.status(400).json({ error: 'Email and plan are required' });
-  }
-
   try {
+    const { email, plan, userProfile = {} } = req.body;
+    if (!email || !plan) {
+      return res.status(400).json({ error: 'Email and plan are required' });
+    }
     const emailService = new EmailService();
     await emailService.sendWorkoutPlan(email, plan, userProfile);
     res.json({ success: true });
   } catch (err) {
-    console.error('✖ [email-plan] send error:', err);
+    console.error(err);
     res.status(500).json({ error: 'Email delivery failed' });
   }
 });
-
 
 // ─── 5. Health Check Endpoint ──────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
