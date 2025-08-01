@@ -196,7 +196,7 @@ function generateEnhancedPDF(planText, userProfile = {}) {
 
   // ─── Footer Page ─────────────────────────────────────────────────────────────
   applyStyle(styles.heading2);
-  doc.text('🚀 Ready to Get Started?');
+  doc.text('Ready to Get Started?');
   rule();
   applyStyle(styles.body);
   doc.text(
