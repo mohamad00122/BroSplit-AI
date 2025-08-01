@@ -217,31 +217,34 @@ function generateEnhancedPDF(planText, userProfile = {}) {
   return doc;
 }
 
-// ─── 4. Email Endpoint with PDF Attachment ─────────────────────────────────────
-class EmailService {
-  constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: +process.env.SMTP_PORT,
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-    });
-  }
+// ─── 4. Email Endpoint using Resend ────────────────────────────────────────────
+import { Resend } from 'resend';
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-  async sendWorkoutPlan(email, plan, userProfile = {}) {
-    const doc = generateEnhancedPDF(plan, userProfile);
-    const buffer = await new Promise((resolve, reject) => {
-      const bufs = []; doc.on('data', chunk => bufs.push(chunk)); doc.on('end', () => resolve(Buffer.concat(bufs))); doc.on('error', reject);
-    });
+async function sendWorkoutPlanWithResend(email, plan, userProfile = {}) {
+  const doc = generateEnhancedPDF(plan, userProfile);
+  const buffer = await new Promise((resolve, reject) => {
+    const bufs = [];
+    doc.on('data', chunk => bufs.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(bufs)));
+    doc.on('error', reject);
+  });
 
-    return this.transporter.sendMail({
-      from: `"BroSplit AI" <${process.env.SMTP_USER}>`,
-      to: email,
-      subject: `Your 6-Week Plan is Ready, ${userProfile.name || ''}`,
-      text: 'Your personalized workout plan is attached!',
-      attachments: [{ filename: 'BroSplit-Plan.pdf', content: buffer }]
-    });
-  }
+  const base64PDF = buffer.toString('base64');
+
+  await resend.emails.send({
+    from: 'support@brosplit.org',
+    to: email,
+    subject: `Your 6-Week Plan is Ready${userProfile.name ? `, ${userProfile.name}` : ''}`,
+    html: `<p>Your personalized workout plan is attached!</p>`,
+    attachments: [
+      {
+        filename: 'BroSplit-Plan.pdf',
+        content: base64PDF,
+        type: 'application/pdf',
+      }
+    ]
+  });
 }
 
 app.post('/api/email-plan', async (req, res) => {
@@ -250,11 +253,11 @@ app.post('/api/email-plan', async (req, res) => {
     if (!email || !plan) {
       return res.status(400).json({ error: 'Email and plan are required' });
     }
-    const emailService = new EmailService();
-    await emailService.sendWorkoutPlan(email, plan, userProfile);
+
+    await sendWorkoutPlanWithResend(email, plan, userProfile);
     res.json({ success: true });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Email delivery failed:", err);
     res.status(500).json({ error: 'Email delivery failed' });
   }
 });
