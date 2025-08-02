@@ -50,7 +50,8 @@ export const makePrompt = ({
     - Wk 6: Ultimate peak, –1 rep, RPE 9  
  
  5. **Load Prescriptions**  
-    - Show %1RM and exact lbs for all %1RM sets.  
+ - Show %1RM and exact lbs for all %1RM sets.  
+ - **Always round all weight recommendations to the nearest 5 lbs**. Avoid numbers like 37.5 or 42 — use only weights commonly found in commercial gyms.
  
  6. **Customization**  
     - Avoid/modify: ${injuries.length ? injuries.join(", ") : "none"}.  

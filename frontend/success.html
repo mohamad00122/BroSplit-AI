@@ -33,6 +33,81 @@
       z-index: -1;
     }
 
+    /* Sticky Email Bar */
+    .sticky-email-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 107, 107, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 107, 107, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      transform: translateY(-100%);
+      transition: transform 0.4s ease-out;
+      animation: slideDownSticky 0.6s ease-out forwards;
+    }
+
+    .sticky-email-bar.show {
+      transform: translateY(0);
+    }
+
+    .sticky-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1rem;
+      max-width: 1000px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .sticky-text {
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .btn-sticky {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      padding: 0.6rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-sticky:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-dismiss {
+      background: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      position: absolute;
+      right: 1rem;
+    }
+
+    .btn-dismiss:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
     .container {
       max-width: 1000px;
       margin: 0 auto;
@@ -418,6 +493,11 @@
       to { transform: translateY(0); opacity: 1; }
     }
 
+    @keyframes slideDownSticky {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(0); }
+    }
+
     @keyframes slideUp {
       from { transform: translateY(50px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
@@ -492,6 +572,27 @@
         font-size: 1.2rem;
         padding: 0.8rem 1rem;
       }
+
+      .sticky-content {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+        padding: 0.8rem;
+      }
+
+      .sticky-text {
+        font-size: 0.9rem;
+      }
+
+      .btn-sticky {
+        font-size: 0.85rem;
+        padding: 0.5rem 1.2rem;
+      }
+
+      .btn-dismiss {
+        position: static;
+        margin-top: 0.5rem;
+      }
     }
 
     /* Success animation */
@@ -504,12 +605,26 @@
       50% { transform: scale(1.05) rotate(2deg); opacity: 1; }
       100% { transform: scale(1) rotate(0deg); opacity: 1; }
     }
+
+    /* Adjust container top padding when sticky bar is visible */
+    .container.with-sticky {
+      padding-top: 6rem;
+    }
   </style>
 </head>
 <body>
   <div class="bg-gradient"></div>
 
-  <div class="container">
+  <!-- Sticky Email Bar -->
+  <div id="stickyEmailBar" class="sticky-email-bar">
+    <div class="sticky-content">
+      <span class="sticky-text">📧 Don't lose your plan! Get it emailed to you.</span>
+      <button id="stickyEmailBtn" class="btn-sticky">Email Me My Plan</button>
+      <button id="dismissSticky" class="btn-dismiss">×</button>
+    </div>
+  </div>
+
+  <div class="container" id="mainContainer">
     <div class="header">
       <h1>BroSplit AI</h1>
       <p class="subtitle">Your personalized workout plan is ready</p>
@@ -585,10 +700,87 @@
 
     const generateBtn = document.getElementById('generatePlan');
     const emailBtn = document.getElementById('emailPlan');
+    const stickyEmailBtn = document.getElementById('stickyEmailBtn');
+    const dismissStickyBtn = document.getElementById('dismissSticky');
+    const stickyEmailBar = document.getElementById('stickyEmailBar');
+    const mainContainer = document.getElementById('mainContainer');
     const planDiv = document.getElementById('plan');
     const planError = document.getElementById('planError');
     const planLoading = document.getElementById('planLoading');
     const planCard = document.getElementById('planContainer');
+
+    let stickyBarDismissed = false;
+
+    // Function to show sticky bar
+    function showStickyBar() {
+      if (!stickyBarDismissed) {
+        stickyEmailBar.style.display = 'block';
+        stickyEmailBar.classList.add('show');
+        mainContainer.classList.add('with-sticky');
+      }
+    }
+
+    // Function to hide sticky bar
+    function hideStickyBar() {
+      stickyEmailBar.classList.remove('show');
+      mainContainer.classList.remove('with-sticky');
+      setTimeout(() => {
+        if (!stickyEmailBar.classList.contains('show')) {
+          stickyEmailBar.style.display = 'none';
+        }
+      }, 400);
+    }
+
+    // Email functionality for both buttons
+    async function sendEmail(button) {
+      const originalText = button.innerHTML;
+      button.disabled = true;
+      button.innerHTML = '⏳ Sending...';
+      
+      try {
+        const resp = await fetch(`${API_URL}/api/email-plan`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.email,
+            plan: document.getElementById('plan').innerText
+          })
+        });
+        
+        if (!resp.ok) throw new Error("Failed to send email");
+        
+        button.innerHTML = '✅ Sent!';
+        
+        // Hide sticky bar after successful email
+        if (button === stickyEmailBtn) {
+          stickyBarDismissed = true;
+          hideStickyBar();
+        }
+        
+        setTimeout(() => {
+          button.innerHTML = originalText;
+        }, 3000);
+        
+      } catch (err) {
+        button.innerHTML = '❌ Failed';
+        alert("⚠️ " + err.message);
+        setTimeout(() => {
+          button.innerHTML = originalText;
+        }, 3000);
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    // Event listeners for email buttons
+    emailBtn.addEventListener('click', () => sendEmail(emailBtn));
+    stickyEmailBtn.addEventListener('click', () => sendEmail(stickyEmailBtn));
+
+    // Dismiss sticky bar
+    dismissStickyBtn.addEventListener('click', () => {
+      stickyBarDismissed = true;
+      hideStickyBar();
+    });
 
     generateBtn.addEventListener('click', async () => {
       // Reset state
@@ -597,6 +789,8 @@
       planCard.style.display = "none";
       emailBtn.style.display = "none";
       generateBtn.disabled = true;
+      stickyBarDismissed = false;
+      hideStickyBar();
 
       planLoading.innerHTML = `
         <div class="loading-card">
@@ -631,6 +825,11 @@
         emailBtn.style.display = "block";
         planCard.scrollIntoView({ behavior: 'smooth' });
 
+        // Show sticky bar after a short delay
+        setTimeout(() => {
+          showStickyBar();
+        }, 2000);
+
         // Clear form data after successful generation
         localStorage.removeItem('brosplitForm');
         
@@ -644,38 +843,6 @@
       } finally {
         planLoading.innerHTML = "";
         generateBtn.disabled = false;
-      }
-    });
-
-    emailBtn.addEventListener('click', async () => {
-      emailBtn.disabled = true;
-      emailBtn.innerHTML = '⏳ Sending...';
-      
-      try {
-        const resp = await fetch(`${API_URL}/api/email-plan`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: formData.email,
-            plan: document.getElementById('plan').innerText
-          })
-        });
-        
-        if (!resp.ok) throw new Error("Failed to send email");
-        
-        emailBtn.innerHTML = '✅ Sent!';
-        setTimeout(() => {
-          emailBtn.innerHTML = '📧 Email Me My Plan';
-        }, 3000);
-        
-      } catch (err) {
-        emailBtn.innerHTML = '❌ Failed';
-        alert("⚠️ " + err.message);
-        setTimeout(() => {
-          emailBtn.innerHTML = '📧 Email Me My Plan';
-        }, 3000);
-      } finally {
-        emailBtn.disabled = false;
       }
     });
 
