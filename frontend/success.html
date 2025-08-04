@@ -731,143 +731,140 @@
       }, 400);
     }
 
-    // Email functionality for both buttons
-    async function sendEmail(button) {
-      const originalText = button.innerHTML;
-      button.disabled = true;
-      button.innerHTML = '⏳ Sending...';
-      
-      try {
-        const resp = await fetch(`${API_URL}/api/email-plan`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: formData.email,
-            plan: document.getElementById('plan').innerText
-          })
-        });
-        
-        if (!resp.ok) throw new Error("Failed to send email");
-        
-        button.innerHTML = '✅ Sent!';
-        
-        // Hide sticky bar after successful email
-        if (button === stickyEmailBtn) {
-          stickyBarDismissed = true;
-          hideStickyBar();
-        }
-        
-        setTimeout(() => {
-          button.innerHTML = originalText;
-        }, 3000);
-        
-      } catch (err) {
-        button.innerHTML = '❌ Failed';
-        alert("⚠️ " + err.message);
-        setTimeout(() => {
-          button.innerHTML = originalText;
-        }, 3000);
-      } finally {
-        button.disabled = false;
-      }
+   // Email functionality for both buttons
+  async function sendEmail(button) {
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '⏳ Sending…';
+
+    const email = formData.email;
+    const planText = document.getElementById('plan').innerText;
+    if (!email) {
+      alert("⚠️ No email address found. Please go back and re-enter your email.");
+      button.innerHTML = originalText;
+      button.disabled = false;
+      return;
     }
 
-    // Event listeners for email buttons
-    emailBtn.addEventListener('click', () => sendEmail(emailBtn));
-    stickyEmailBtn.addEventListener('click', () => sendEmail(stickyEmailBtn));
+    try {
+      console.log("Sending payload:", { email, plan: planText });
+      const resp = await fetch(`${API_URL}/api/email-plan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, plan: planText })
+      });
+      if (!resp.ok) throw new Error("Server rejected the email");
 
-    // Dismiss sticky bar
-    dismissStickyBtn.addEventListener('click', () => {
-      stickyBarDismissed = true;
-      hideStickyBar();
-    });
+      button.innerHTML = '✅ Sent!';
+      // now that it went out successfully, clear the saved form
+      localStorage.removeItem('brosplitForm');
 
-    generateBtn.addEventListener('click', async () => {
-      // Reset state
-      planDiv.innerHTML = "";
-      planError.innerHTML = "";
-      planCard.style.display = "none";
-      emailBtn.style.display = "none";
-      generateBtn.disabled = true;
-      stickyBarDismissed = false;
-      hideStickyBar();
+      if (button === stickyEmailBtn) {
+        stickyBarDismissed = true;
+        hideStickyBar();
+      }
+
+      setTimeout(() => {
+        button.innerHTML = originalText;
+      }, 3000);
+
+    } catch (err) {
+      console.error(err);
+      button.innerHTML = '❌ Failed';
+      alert("⚠️ " + err.message);
+      setTimeout(() => {
+        button.innerHTML = originalText;
+      }, 3000);
+
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  // Wire up both email buttons
+  emailBtn.addEventListener('click', () => sendEmail(emailBtn));
+  stickyEmailBtn.addEventListener('click', () => sendEmail(stickyEmailBtn));
+
+  // Dismiss sticky bar
+  dismissStickyBtn.addEventListener('click', () => {
+    stickyBarDismissed = true;
+    hideStickyBar();
+  });
+
+  // Plan generation handler
+  generateBtn.addEventListener('click', async () => {
+    // Reset UI
+    planDiv.innerHTML = "";
+    planError.innerHTML = "";
+    planCard.style.display = "none";
+    emailBtn.style.display = "none";
+    generateBtn.disabled = true;
+    stickyBarDismissed = false;
+    hideStickyBar();
+
+    planLoading.innerHTML = `
+      <div class="loading-card">
+        <div class="loading-icons">
+          <span class="loading-icon">🤖</span>
+          <span class="loading-icon">💭</span>
+          <span class="loading-icon">🏋️</span>
+        </div>
+        <h3 class="loading-title">Generating your personalized plan...</h3>
+        <p class="loading-description">Our AI is analyzing your preferences and creating the perfect workout split for you!</p>
+        <div class="progress-container"><div class="progress-bar"></div></div>
+      </div>`;
+
+    try {
+      const res = await fetch(`${API_URL}/api/generate-plan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, ...formData })
+      });
+      if (!res.ok) throw new Error("Could not generate plan");
+      const { plan } = await res.json();
 
       planLoading.innerHTML = `
-        <div class="loading-card">
-          <div class="loading-icons">
-            <span class="loading-icon">🤖</span>
-            <span class="loading-icon">💭</span>
-            <span class="loading-icon">🏋️</span>
-          </div>
-          <h3 class="loading-title">Generating your personalized plan...</h3>
-          <p class="loading-description">Our AI is analyzing your preferences and creating the perfect workout split for you!</p>
-          <div class="progress-container"><div class="progress-bar"></div></div>
+        <div class="loading-card" style="background: rgba(76, 205, 196, 0.1); border-color: rgba(76, 205, 196, 0.3);">
+          <h3 class="loading-title" style="color: #4ecdc4;">✅ Plan Generated Successfully!</h3>
+          <p class="loading-description" style="color: #4ecdc4;">Your personalized workout plan is ready!</p>
         </div>`;
 
-      try {
-        const res = await fetch(`${API_URL}/api/generate-plan`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId, ...formData })
-        });
-        
-        if (!res.ok) throw new Error("Could not generate plan");
-        const { plan } = await res.json();
+      planDiv.innerHTML = marked.parse(plan);
+      planCard.style.display = "block";
+      emailBtn.style.display = "block";
+      planCard.scrollIntoView({ behavior: 'smooth' });
 
-        planLoading.innerHTML = `
-          <div class="loading-card" style="background: rgba(76, 205, 196, 0.1); border-color: rgba(76, 205, 196, 0.3);">
-            <h3 class="loading-title" style="color: #4ecdc4;">✅ Plan Generated Successfully!</h3>
-            <p class="loading-description" style="color: #4ecdc4;">Your personalized workout plan is ready!</p>
-          </div>`;
+      // Show sticky bar after a short delay
+      setTimeout(showStickyBar, 2000);
 
-        planDiv.innerHTML = marked.parse(plan);
-        planCard.style.display = "block";
-        emailBtn.style.display = "block";
-        planCard.scrollIntoView({ behavior: 'smooth' });
+    } catch (err) {
+      planError.innerHTML = `
+        <div class="error-card">
+          <h3 class="error-title">⚠️ Generation Failed</h3>
+          <p class="error-description">${err.message || "Could not generate plan."}</p>
+          <button onclick="location.reload()" class="btn btn-primary" style="margin-top:1rem">🔄 Try Again</button>
+        </div>`;
+    } finally {
+      planLoading.innerHTML = "";
+      generateBtn.disabled = false;
+    }
+  });
 
-        // Show sticky bar after a short delay
-        setTimeout(() => {
-          showStickyBar();
-        }, 2000);
+  // Clean up celebration animation
+  setTimeout(() => {
+    document.querySelectorAll('.celebrate').forEach(el => el.classList.remove('celebrate'));
+  }, 800);
 
-        // Clear form data after successful generation
-        localStorage.removeItem('brosplitForm');
-        
-      } catch (err) {
-        planError.innerHTML = `
-          <div class="error-card">
-            <h3 class="error-title">⚠️ Generation Failed</h3>
-            <p class="error-description">${err.message || "Could not generate plan."}</p>
-            <button onclick="location.reload()" class="btn btn-primary" style="margin-top:1rem">🔄 Try Again</button>
-          </div>`;
-      } finally {
-        planLoading.innerHTML = "";
-        generateBtn.disabled = false;
+  // Scroll-trigger animations
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animation = 'slideUp 0.6s ease-out forwards';
       }
     });
+  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-    // Remove celebration animation after it completes
-    setTimeout(() => {
-      document.querySelectorAll('.celebrate').forEach(el => {
-        el.classList.remove('celebrate');
-      });
-    }, 800);
-
-    // Intersection observer for scroll animations
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.animation = 'slideUp 0.6s ease-out forwards';
-        }
-      });
-    }, { 
-      threshold: 0.1, 
-      rootMargin: '0px 0px -50px 0px' 
-    });
-
-    document.querySelectorAll('.plan-card, .loading-card, .error-card').forEach(el => {
-      observer.observe(el);
-    });
-  </script>
-</body>
-</html>
+  document.querySelectorAll('.plan-card, .loading-card, .error-card').forEach(el => {
+    observer.observe(el);
+  });
+</script>
