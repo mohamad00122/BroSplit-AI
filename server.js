@@ -6,6 +6,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import PDFDocument from "pdfkit";
+import nodemailer from "nodemailer";
 import fs from "fs";
 import Stripe from "stripe";
 import OpenAI from "openai";
@@ -36,7 +37,7 @@ app.post("/api/checkout", async (req, res) => {
       mode: "payment",
       success_url: `${process.env.FRONTEND_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL}/`
-    });
+    });    
     res.json({ url: session.url });
   } catch (err) {
     console.error(err);
@@ -58,10 +59,8 @@ app.post("/api/generate-plan", async (req, res) => {
       return res.status(402).send("Payment required");
     }
 
-    const prompt = makePrompt({
-      daysPerWeek, equipment, injuries, experience,
-      goal, dislikes, focusMuscle, age, sex, bodyweight, lifts
-    });
+    const prompt = makePrompt({ daysPerWeek, equipment, injuries, experience,
+      goal, dislikes, focusMuscle, age, sex, bodyweight, lifts });
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
@@ -110,6 +109,8 @@ function generateEnhancedPDF(planText, userProfile = {}) {
   }
 
   // ─── Cover Page ──────────────────────────────────────────────────────────────
+
+  // 1. Render cover text at top
   applyStyle(styles.heading1);
   doc.text('Your Personal 6-Week BroSplit Journey', { align: 'center' });
   doc.moveDown(1);
@@ -120,9 +121,9 @@ function generateEnhancedPDF(planText, userProfile = {}) {
   });
   doc.moveDown(2);
 
-  // Logo
+  // 2. Draw logo in vertical center
   const logoPath  = path.join(__dirname, 'assets', 'BroSplitLogo.png');
-  const logoWidth = 250;
+  const logoWidth = 250;  // increased size for bigger logo
   const logoX     = (width - logoWidth) / 2;
   const logoY     = (height / 2) - (logoWidth / 2);
   try {
@@ -220,128 +221,43 @@ function generateEnhancedPDF(planText, userProfile = {}) {
 import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Branded, mobile‑friendly email with inline logo + plain‑text fallback
 async function sendWorkoutPlanWithResend(email, plan, userProfile = {}) {
-  // 1) Generate the PDF buffer (with clear errors if it fails)
-  let pdfBuffer;
-  try {
-    const doc = generateEnhancedPDF(plan, userProfile);
-    pdfBuffer = await new Promise((resolve, reject) => {
-      const bufs = [];
-      doc.on('data', c => bufs.push(c));
-      doc.on('end', () => resolve(Buffer.concat(bufs)));
-      doc.on('error', reject);
-    });
-  } catch (err) {
-    console.error('❌ PDF generation failed:', err);
-    throw new Error('Failed to generate PDF');
-  }
+  const doc = generateEnhancedPDF(plan, userProfile);
+  const buffer = await new Promise((resolve, reject) => {
+    const bufs = [];
+    doc.on('data', chunk => bufs.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(bufs)));
+    doc.on('error', reject);
+  });
 
-  // 2) Try to inline your logo so it appears even if remote images are blocked
-  let logoDataUri = '';
-  try {
-    const logoPath = path.join(__dirname, 'assets', 'BroSplitLogo.png');
-    const logoBase64 = fs.readFileSync(logoPath).toString('base64');
-    logoDataUri = `data:image/png;base64,${logoBase64}`;
-  } catch (e) {
-    console.warn('⚠️ Could not inline logo, sending email without it:', e.message);
-  }
+  const base64PDF = buffer.toString('base64');
 
-  // 3) Branding + content
-  const brand = {
-    bg: '#ffffff',
-    panel: '#f8fafc',
-    text: '#1f2937',
-    subtext: '#4b5563',
-    accent: '#ff6b6b',
-  };
-  const instagramURL = 'https://www.instagram.com/brosplitai/profilecard/?igsh=NTc4MTIwNjQ2YQ==';
-  const preheader = 'Your 6‑Week BroSplit training plan is attached as a PDF. Save it to your phone or print it.';
-
-  const html = `
-  <div style="background:${brand.panel};padding:16px 0;">
-    <div style="max-width:620px;margin:0 auto;background:${brand.bg};border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;font-family:Arial,Helvetica,sans-serif;">
-      <span style="display:none!important;opacity:0;color:transparent;height:0;width:0;overflow:hidden;visibility:hidden;">${preheader}</span>
-      <div style="text-align:center;background:${brand.accent};padding:18px;">
-        ${logoDataUri
-          ? `<img src="${logoDataUri}" alt="BroSplit" style="max-width:140px;height:auto;display:block;margin:0 auto 6px;" />`
-          : `<h1 style="color:#fff;margin:0;font-size:22px;font-weight:800;letter-spacing:.3px;">BROSPLIT</h1>`}
-        <div style="color:#fff;font-size:18px;font-weight:700;letter-spacing:.2px;margin-top:6px;">Your 6‑Week Plan</div>
-      </div>
-      <div style="padding:24px 22px;color:${brand.text};line-height:1.55;">
-        <p style="margin:0 0 12px;">Your personalized <strong>6‑Week BroSplit Training Plan</strong> is attached as a PDF.</p>
-        <p style="margin:0 0 18px;color:${brand.subtext};">Inside you’ll find your weekly split, sets & reps, and pro tips. Save it to your phone or print it for the gym.</p>
-        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin:18px 0;">
-          <div style="font-weight:700;margin-bottom:10px;">Next steps (60 seconds):</div>
-          <ol style="padding-left:18px;margin:0;color:${brand.text};">
-            <li>Open the attached <strong>BroSplit‑Plan.pdf</strong>.</li>
-            <li>Save it to Files / Google Drive (or print).</li>
-            <li>Start <strong>Day 1</strong> today — no excuses.</li>
-          </ol>
-        </div>
-        <div style="text-align:center;margin:22px 0 8px;">
-          <a href="https://brosplit.org" target="_blank"
-             style="display:inline-block;background:${brand.accent};color:#fff;text-decoration:none;font-weight:800;padding:12px 22px;border-radius:10px;">
-            Open BroSplit.org
-          </a>
-        </div>
-        <p style="margin:18px 0 8px;color:${brand.subtext};font-size:14px;">
-          Questions or feedback? Reply to this email or DM us on IG:
-          <a href="${instagramURL}" target="_blank" style="color:${brand.accent};text-decoration:none;">@brosplitai</a>
-        </p>
-        <p style="margin:10px 0 0;font-size:14px;color:${brand.subtext};">Crush it this week,</p>
-        <p style="margin:2px 0 0;font-weight:700;">— The BroSplit Team</p>
-      </div>
-      <div style="background:#f3f4f6;color:#6b7280;text-align:center;padding:12px 10px;font-size:12px;">
-        BroSplit AI • support@brosplit.org
-      </div>
-    </div>
-  </div>
-  `;
-
-  const text = `Your 6‑Week BroSplit Training Plan is attached as a PDF.
-
-Next steps:
-1) Open the attached BroSplit‑Plan.pdf
-2) Save it to your phone or print it
-3) Start Day 1 today
-
-Questions? Reply here or DM us on IG @brosplitai
-BroSplit AI • support@brosplit.org`;
-
-  // 4) Send via Resend
-  try {
-    await resend.emails.send({
-      from: 'BroSplit AI Coach <support@brosplit.org>',
-      to: email,
-      subject: '🔥 Your 6‑Week BroSplit Plan (PDF attached)',
-      html,
-      text,
-      attachments: [
-        {
-          filename: 'BroSplit-Plan.pdf',
-          content: pdfBuffer.toString('base64'),
-          type: 'application/pdf',
-        }
-      ],
-    });
-  } catch (err) {
-    console.error('❌ Email delivery failed:', err?.response?.data || err?.message || err);
-    throw new Error('Email delivery failed');
-  }
+  await resend.emails.send({
+    from: 'support@brosplit.org',
+    to: email,
+    subject: `Your 6-Week Plan is Ready${userProfile.name ? `, ${userProfile.name}` : ''}`,
+    html: `<p>Your personalized workout plan is attached!</p>`,
+    attachments: [
+      {
+        filename: 'BroSplit-Plan.pdf',
+        content: base64PDF,
+        type: 'application/pdf',
+      }
+    ]
+  });
 }
 
-// Email route (used by your frontend)
 app.post('/api/email-plan', async (req, res) => {
   try {
     const { email, plan, userProfile = {} } = req.body;
     if (!email || !plan) {
       return res.status(400).json({ error: 'Email and plan are required' });
     }
+
     await sendWorkoutPlanWithResend(email, plan, userProfile);
     res.json({ success: true });
   } catch (err) {
-    console.error('❌ Email delivery failed:', err?.response?.data || err?.message || err);
+    console.error("❌ Email delivery failed:", err);
     res.status(500).json({ error: 'Email delivery failed' });
   }
 });
