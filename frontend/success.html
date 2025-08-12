@@ -835,7 +835,12 @@
       planCard.scrollIntoView({ behavior: 'smooth' });
 
       // Show sticky bar after a short delay
-      setTimeout(showStickyBar, 2000);
+      setTimeout(() => {
+  if (planCard.style.display === "block") {
+    showStickyBar();
+  }
+}, 2000);
+
 
     } catch (err) {
       planError.innerHTML = `
