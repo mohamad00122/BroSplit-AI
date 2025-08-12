@@ -527,11 +527,10 @@
         </div>
       </div>
       
-      <div class="urgency-badge">
+      <div class="urgency-badge" id="scrollToForm" style="cursor:pointer;">
         <span>⚡</span>
         <span>Limited Time: Only $5 (Usually $47)</span>
       </div>
-    </div>
 
     <div class="fear-section">
       <h2>⚠️ Are You Making These Deadly Gym Mistakes?</h2>
@@ -823,6 +822,14 @@
       el.addEventListener('focus', () => el.style.transform = 'scale(1.02)');
       el.addEventListener('blur',  () => el.style.transform = 'scale(1)');
     });
+
+    // New: Scroll to form when urgency badge is clicked
+  document.getElementById('scrollToForm').addEventListener('click', () => {
+    document.getElementById('planForm').scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+  });
+});
   </script>
 </body>
 </html>
