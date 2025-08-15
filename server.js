@@ -6,7 +6,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import PDFDocument from "pdfkit";
-import nodemailer from "nodemailer";
+import nodemailer from "nodemailer"; // (unused; safe to remove if you want)
 import fs from "fs";
 import Stripe from "stripe";
 import OpenAI from "openai";
@@ -40,17 +40,14 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 app.post("/api/checkout", async (req, res) => {
   try {
-    // Step 1: Determine which Price ID to use
-    const price = req.body.planType === 'pro'
-      ? 'price_1RsQJUAhLaqVN2Rssepup9EE'   // $15 Pro version
-      : 'price_1RsQJUAhLaqVN2Rssepup9EE'; // $5 regular workout-only version
+    // choose price by planType ('workout' = $5, 'pro' = $15)
+    const price =
+      req.body.planType === 'pro'
+        ? 'price_1RsQJUAhLaqVN2Rssepup9EE'   // $15 Pro
+        : 'price_1RsQJUAhLaqVN2Rssepup9EE'; // $5 Regular
 
-    // Step 2: Create the Checkout Session with the correct price
     const session = await stripe.checkout.sessions.create({
-      line_items: [{
-        price,
-        quantity: 1
-      }],
+      line_items: [{ price, quantity: 1 }],
       mode: "payment",
       success_url: `${process.env.FRONTEND_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL}/`
@@ -220,7 +217,7 @@ app.post("/api/nutrition", genLimiter, async (req, res) => {
   }
 });
 
-// ─── 4. Improved PDF Generation Function (workout; unchanged) ──────────────────
+// ─── 4. Improved PDF Generation Function (workout) ─────────────────────────────
 function generateEnhancedPDF(planText, userProfile = {}) {
   const doc = new PDFDocument({
     size: "A4",
@@ -356,7 +353,7 @@ function generateEnhancedPDF(planText, userProfile = {}) {
 import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-async function sendWorkoutPlanWithResend(email, plan, userProfile = {}) {
+async function sendWorkoutPlanWithResend(email, plan, userProfile = {}, nutritionJson = null) {
   const doc = generateEnhancedPDF(plan, userProfile);
   const buffer = await new Promise((resolve, reject) => {
     const bufs = [];
@@ -367,29 +364,39 @@ async function sendWorkoutPlanWithResend(email, plan, userProfile = {}) {
 
   const base64PDF = buffer.toString('base64');
 
+  const attachments = [
+    {
+      filename: 'BroSplit-Plan.pdf',
+      content: base64PDF,
+      type: 'application/pdf',
+    }
+  ];
+
+  if (nutritionJson) {
+    attachments.push({
+      filename: 'Nutrition-Plan.json',
+      content: Buffer.from(JSON.stringify(nutritionJson, null, 2)).toString('base64'),
+      type: 'application/json',
+    });
+  }
+
   await resend.emails.send({
     from: 'support@brosplit.org',
     to: email,
     subject: `Your 6-Week Plan is Ready${userProfile.name ? `, ${userProfile.name}` : ''}`,
-    html: `<p>Your personalized workout plan is attached!</p>`,
-    attachments: [
-      {
-        filename: 'BroSplit-Plan.pdf',
-        content: base64PDF,
-        type: 'application/pdf',
-      }
-    ]
+    html: `<p>Your personalized workout plan is attached!${nutritionJson ? ' Nutrition plan attached as JSON.' : ''}</p>`,
+    attachments
   });
 }
 
 app.post('/api/email-plan', async (req, res) => {
   try {
-    const { email, plan, userProfile = {} } = req.body;
+    const { email, plan, userProfile = {}, nutrition = null } = req.body;
     if (!email || !plan) {
       return res.status(400).json({ error: 'Email and plan are required' });
     }
 
-    await sendWorkoutPlanWithResend(email, plan, userProfile);
+    await sendWorkoutPlanWithResend(email, plan, userProfile, nutrition);
     res.json({ success: true });
   } catch (err) {
     console.error("❌ Email delivery failed:", err);

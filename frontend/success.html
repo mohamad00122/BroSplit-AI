@@ -11,18 +11,36 @@
       radial-gradient(circle at 20% 80%, #ff6b6b 0%, transparent 50%),
       radial-gradient(circle at 80% 20%, #4ecdc4 0%, transparent 50%),
       radial-gradient(circle at 40% 40%, #45b7d1 0%, transparent 50%);opacity:.1;z-index:-1}
-    .sticky-email-bar{position:fixed;top:0;left:0;right:0;background:rgba(255,107,107,.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,107,107,.3);box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:1000;transform:translateY(-100%);transition:transform .4s ease-out;animation:slideDownSticky .6s ease-out forwards}
-    .sticky-email-bar.show{transform:translateY(0)}
+
+    /* Sticky Email Bar: start hidden, animate only when .show is added */
+    .sticky-email-bar{
+      position:fixed;top:0;left:0;right:0;
+      background:rgba(255,107,107,.95);
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(255,107,107,.3);
+      box-shadow:0 4px 20px rgba(0,0,0,.3);
+      z-index:1000;
+      transform:translateY(-100%);
+      transition:transform .4s ease-out;
+      display:none;
+    }
+    .sticky-email-bar.show{
+      display:block;
+      animation:slideDownSticky .6s ease-out forwards;
+    }
+
     .sticky-content{display:flex;align-items:center;justify-content:center;gap:1rem;padding:1rem;max-width:1000px;margin:0 auto;position:relative}
     .sticky-text{color:#fff;font-weight:600;font-size:1rem}
     .btn-sticky{background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.3);padding:.6rem 1.5rem;border-radius:12px;font-weight:700;cursor:pointer;transition:all .3s ease;font-size:.95rem;text-transform:uppercase;letter-spacing:.5px}
     .btn-sticky:hover{background:rgba(255,255,255,.3);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.2)}
     .btn-dismiss{background:transparent;color:rgba(255,255,255,.7);border:none;font-size:1.5rem;cursor:pointer;padding:.25rem .5rem;border-radius:6px;transition:all .3s ease;position:absolute;right:1rem}
     .btn-dismiss:hover{background:rgba(255,255,255,.1);color:#fff}
+
     .container{max-width:1000px;margin:0 auto;padding:2rem;position:relative;z-index:1}
     .header{text-align:center;margin-bottom:3rem;animation:slideDown .8s ease-out}
     .header h1{font-size:3.5rem;font-weight:900;margin-bottom:1rem;background:linear-gradient(135deg,#ff6b6b,#4ecdc4,#45b7d1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.02em;line-height:1.1}
     .header .subtitle{font-size:1.2rem;color:#e0e0e0;font-weight:400}
+
     .success-card,.loading-card,.plan-card,.error-card{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);border-radius:24px;padding:3rem;border:1px solid rgba(255,255,255,.1);box-shadow:0 25px 50px -12px rgba(0,0,0,.5);text-align:center;margin-bottom:2rem;position:relative;overflow:hidden}
     .success-card{animation:slideUp .8s ease-out .2s both}
     .success-card::before,.btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);transition:left .8s ease}
@@ -32,6 +50,7 @@
     .success-icon{font-size:4rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.2));animation:bounce 2s infinite}
     .success-icon:nth-child(2){animation-delay:.2s}.success-icon:nth-child(3){animation-delay:.4s}
     .success-description{font-size:1.2rem;color:#e0e0e0;margin-bottom:2rem;font-weight:400}
+
     .button-group{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
     .btn{padding:1rem 2.5rem;border:none;border-radius:16px;font-size:1.1rem;font-weight:700;cursor:pointer;transition:all .3s ease;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;position:relative;overflow:hidden;text-transform:uppercase;letter-spacing:.5px}
     .btn::before{transition:left .6s ease}
@@ -41,6 +60,7 @@
     .btn-secondary{background:rgba(255,255,255,.1);color:#e0e0e0;border:1px solid rgba(255,255,255,.2)}
     .btn-secondary:hover{transform:translateY(-2px);background:rgba(255,255,255,.15)}
     .btn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
+
     .loading-title{font-size:1.8rem;font-weight:600;color:#fff;margin-bottom:1rem}
     .loading-description{font-size:1.1rem;color:#e0e0e0;margin-bottom:2rem}
     .loading-icons{display:flex;justify-content:center;gap:1rem;margin:2rem 0}
@@ -48,6 +68,7 @@
     .loading-icon:nth-child(2){animation-delay:.3s}.loading-icon:nth-child(3){animation-delay:.6s}
     .progress-container{width:100%;height:8px;background:rgba(255,107,107,.2);border-radius:4px;overflow:hidden;margin:2rem 0}
     .progress-bar{height:100%;background:linear-gradient(135deg,#ff6b6b,#ff5252);border-radius:4px;animation:loading 3s ease-in-out infinite}
+
     .plan-header{text-align:center;margin-bottom:2.5rem}
     .plan-title{font-size:2.2rem;font-weight:700;color:#fff;margin-bottom:1rem}
     .plan-subtitle{font-size:1.1rem;color:#e0e0e0;font-weight:400}
@@ -60,28 +81,52 @@
     #plan li:hover{background:#fff;transform:translateX(8px);box-shadow:0 4px 16px rgba(0,0,0,.12)}
     #plan p{margin:1.5rem 0;padding:1.5rem;background:rgba(255,255,255,.9);border-radius:12px;border-left:4px solid #ff6b6b;font-size:1rem;line-height:1.6}
     #plan hr{margin:3rem 0;border:none;height:2px;background:linear-gradient(90deg,transparent,#ff6b6b,transparent)}
+
     .guarantee{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);padding:1.5rem;border-radius:12px;margin-top:2rem;text-align:center}
     .guarantee h4{color:#4caf50;margin-bottom:.5rem}
+
     .nutrition-card{background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.3);border-radius:16px;padding:2rem;margin:2rem 0}
     .nutrition-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin:1rem 0}
     .nutrition-item{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:1rem;border-radius:12px}
     .code-like{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:.95rem; white-space:pre-wrap; word-break:break-word; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.1); padding:1rem; border-radius:12px }
+
     @keyframes slideDown{from{transform:translateY(-50px);opacity:0}to{transform:translateY(0);opacity:1}}
     @keyframes slideDownSticky{from{transform:translateY(-100%)}to{transform:translateY(0)}}
     @keyframes slideUp{from{transform:translateY(50px);opacity:0}to{transform:translateY(0);opacity:1}}
     @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
     @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:.7}}
     @keyframes loading{0%{width:0%}50%{width:80%}100%{width:100%}}
-    @media (max-width:768px){.container{padding:1rem}.header h1{font-size:2.5rem}.success-card{padding:2rem}.success-title{font-size:2rem}.success-icons{gap:1rem}.success-icon{font-size:3rem}.button-group{flex-direction:column;gap:1rem}.btn{width:100%;justify-content:center}.plan-card{padding:2rem}#plan{padding:1.5rem;font-size:.9rem}#plan h1{font-size:1.8rem}#plan h2{font-size:1.2rem;padding:.8rem 1rem}.sticky-content{flex-direction:column;gap:.5rem;text-align:center;padding:.8rem}.sticky-text{font-size:.9rem}.btn-sticky{font-size:.85rem;padding:.5rem 1.2rem}.btn-dismiss{position:static;margin-top:.5rem}}
-    .celebrate{animation:celebrate .8s ease-out}@keyframes celebrate{0%{transform:scale(.8) rotate(-5deg);opacity:0}50%{transform:scale(1.05) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+
+    @media (max-width:768px){
+      .container{padding:1rem}
+      .header h1{font-size:2.5rem}
+      .success-card{padding:2rem}
+      .success-title{font-size:2rem}
+      .success-icons{gap:1rem}
+      .success-icon{font-size:3rem}
+      .button-group{flex-direction:column;gap:1rem}
+      .btn{width:100%;justify-content:center}
+      .plan-card{padding:2rem}
+      #plan{padding:1.5rem;font-size:.9rem}
+      #plan h1{font-size:1.8rem}
+      #plan h2{font-size:1.2rem;padding:.8rem 1rem}
+      .sticky-content{flex-direction:column;gap:.5rem;text-align:center;padding:.8rem}
+      .sticky-text{font-size:.9rem}
+      .btn-sticky{font-size:.85rem;padding:.5rem 1.2rem}
+      .btn-dismiss{position:static;margin-top:.5rem}
+    }
+
+    .celebrate{animation:celebrate .8s ease-out}
+    @keyframes celebrate{0%{transform:scale(.8) rotate(-5deg);opacity:0}50%{transform:scale(1.05) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+
     .container.with-sticky{padding-top:6rem}
   </style>
 </head>
 <body>
   <div class="bg-gradient"></div>
 
-  <!-- Sticky Email Bar -->
-  <div id="stickyEmailBar" class="sticky-email-bar">
+  <!-- Sticky Email Bar (starts hidden; shown after generation) -->
+  <div id="stickyEmailBar" class="sticky-email-bar" style="display:none;">
     <div class="sticky-content">
       <span class="sticky-text">📧 Don’t lose your plan! Get your workout PDF emailed to you.</span>
       <button id="stickyEmailBtn" class="btn-sticky">Email Me My Plan</button>
@@ -113,8 +158,10 @@
         <h2 class="plan-title">🏋️‍♂️ Your Custom Workout Plan</h2>
         <p class="plan-subtitle">Tailored specifically for your goals and preferences</p>
       </div>
+
       <div id="plan"></div>
 
+      <!-- Nutrition (Pro) -->
       <div id="nutritionContainer" class="nutrition-card" style="display:none; text-align:left;">
         <h2 style="margin-bottom:.5rem;">🥗 Nutrition Plan (Macros + Meals)</h2>
         <div id="nutritionSummary" class="nutrition-grid"></div>
@@ -199,14 +246,21 @@
     function showStickyBar() {
       if (!stickyBarDismissed) {
         stickyEmailBar.style.display = 'block';
-        stickyEmailBar.classList.add('show');
-        mainContainer.classList.add('with-sticky');
+        // let layout settle, then add .show to animate in
+        requestAnimationFrame(() => {
+          stickyEmailBar.classList.add('show');
+          mainContainer.classList.add('with-sticky');
+        });
       }
     }
     function hideStickyBar() {
       stickyEmailBar.classList.remove('show');
       mainContainer.classList.remove('with-sticky');
-      setTimeout(() => { if (!stickyEmailBar.classList.contains('show')) stickyEmailBar.style.display = 'none'; }, 400);
+      setTimeout(() => {
+        if (!stickyEmailBar.classList.contains('show')) {
+          stickyEmailBar.style.display = 'none';
+        }
+      }, 400);
     }
 
     async function sendEmail(button) {
@@ -223,7 +277,6 @@
         const resp = await fetch(`${API_URL}/api/email-plan`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          // backend currently attaches the workout PDF; we also pass nutrition for future support
           body: JSON.stringify({ email, plan: planText, nutrition: nutritionPlan })
         });
         if (!resp.ok) throw new Error("Server rejected the email");
@@ -265,7 +318,12 @@
       // Day plans (render first 7 days)
       nutritionDays.innerHTML = n.day_plans.slice(0,7).map(d => {
         const meals = (d.meals || []).map(m => {
-          const ing = (m.ingredients || []).map(i => `${i.item} — ${Object.values(i)[1]}${i.grams?'g':''}${i.ml?' ml':''}${i.count?' ct':''}`).join('; ');
+          const ing = (m.ingredients || []).map(i => {
+            const vals = Object.values(i);
+            const item = i.item || vals[0];
+            const qty = i.grams ? `${i.grams} g` : i.ml ? `${i.ml} ml` : i.count ? `${i.count} ct` : '';
+            return `${item}${qty ? ' — ' + qty : ''}`;
+          }).join('; ');
           const mac = m.macros ? ` (${m.macros.kcal||0} kcal • P${m.macros.protein_g||0}/C${m.macros.carbs_g||0}/F${m.macros.fat_g||0})` : '';
           return `<li><strong>${m.name}:</strong> ${m.recipe}${mac}<br><span style="opacity:.85">${ing}</span></li>`;
         }).join('');
@@ -348,27 +406,98 @@
               <p class="loading-description" style="color:#4ecdc4;">Macros, meals, grocery list, and batch prep.</p>
               <div class="progress-container"><div class="progress-bar"></div></div>
             </div>`;
-          // Build payload required by /api/nutrition
+
+          // Helpers to normalize data for /api/nutrition (Zod schema)
+          const toNum = v => (v === null || v === undefined || v === '' ? NaN : Number(v));
+          const days = Number(formData.daysPerWeek || 3);
+
+          // Sex must be 'male' or 'female' for the schema
+          const sex = (formData.sex === 'female') ? 'female' : 'male';
+
+          // Height: prefer cm; fallback feet/inches; otherwise a reasonable default
+          let height_cm = toNum(formData.height_cm);
+          if (Number.isNaN(height_cm)) {
+            const ft = toNum(formData.height_ft || formData.heightFeet);
+            const inch = toNum(formData.height_in || formData.heightInches);
+            if (!Number.isNaN(ft) || !Number.isNaN(inch)) {
+              height_cm = Math.round(((ft || 0) * 12 + (inch || 0)) * 2.54);
+            } else {
+              height_cm = (sex === 'female') ? 165 : 175; // default
+            }
+          }
+
+          // Weight: prefer kg; fallback from lbs (bodyweight) if needed
+          let weight_kg = toNum(formData.weight_kg);
+          if (Number.isNaN(weight_kg)) {
+            const lbs = toNum(formData.bodyweight);
+            if (!Number.isNaN(lbs)) weight_kg = Math.round(lbs * 0.453592);
+          }
+          if (Number.isNaN(weight_kg)) {
+            planLoading.innerHTML = '';
+            throw new Error("Missing weight. Please include bodyweight on the previous page.");
+          }
+
+          const age = toNum(formData.age);
+          if (Number.isNaN(age)) {
+            planLoading.innerHTML = '';
+            throw new Error("Missing age. Please include age on the previous page.");
+          }
+
+          // Map training goal string → cut / gain / recomp
+          const g = (formData.nutrition_goal || formData.goal || '').toLowerCase();
+          const nutrition_goal =
+            g.includes('lose') || g.includes('fat') || g.includes('cut') ? 'cut' :
+            g.includes('gain') || g.includes('bulk') || g.includes('muscle') ? 'gain' :
+            'recomp';
+
+          // Activity & training load defaults
+          const activity = formData.activity || (days >= 5 ? 'very_active' : days >= 3 ? 'moderate' : 'light');
+          const training_load = formData.training_load || (days >= 5 ? 'high' : days >= 3 ? 'moderate' : 'light');
+
+          // Meals/day, cuisine, diet, allergies – normalize to arrays/numbers
+          const meals_per_day = toNum(formData.meals_per_day) || 4;
+
+          let cuisine_prefs = formData.cuisine_prefs || [];
+          if (typeof cuisine_prefs === 'string' && cuisine_prefs.trim()) {
+            cuisine_prefs = cuisine_prefs.split(',').map(s => s.trim()).filter(Boolean);
+          }
+
+          let diet_prefs = formData.diet_prefs || ['none'];
+          if (typeof diet_prefs === 'string') diet_prefs = [diet_prefs];
+          if (!diet_prefs.length) diet_prefs = ['none'];
+
+          let allergies = formData.allergies || [];
+          if (typeof allergies === 'string' && allergies.trim()) {
+            allergies = allergies.split(',').map(s => s.trim()).filter(Boolean);
+          }
+
           const payload = {
-            sex: formData.sex,
-            age: Number(formData.age),
-            height_cm: formData.height_cm,
-            weight_kg: formData.weight_kg,
-            activity: formData.activity || 'moderate',
-            goal: formData.nutrition_goal || 'recomp',
-            training_load: formData.training_load || 'moderate',
-            meals_per_day: formData.meals_per_day || 4,
-            cuisine_prefs: formData.cuisine_prefs || [],
-            diet_prefs: formData.diet_prefs || ['none'],
-            allergies: formData.allergies || [],
+            sex,
+            age,
+            height_cm,
+            weight_kg,
+            activity,                 // sedentary | light | moderate | very_active
+            goal: nutrition_goal,     // cut | recomp | gain
+            training_load,            // light | moderate | high
+            meals_per_day,
+            cuisine_prefs,
+            diet_prefs,               // enum array including 'none'
+            allergies,
             budget_level: formData.budget_level || 'normal',
             email: formData.email
           };
+
           const nres = await fetch(`${API_URL}/api/nutrition`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
-          if (!nres.ok) throw new Error("Could not generate nutrition plan.");
+
+          if (!nres.ok) {
+            const errPayload = await nres.json().catch(() => ({}));
+            throw new Error(errPayload?.error || "Could not generate nutrition plan.");
+          }
+
           const ndata = await nres.json();
           nutritionPlan = ndata.plan;
           renderNutrition(nutritionPlan);
@@ -381,7 +510,10 @@
             <p class="loading-description" style="color:#4ecdc4;">You're all set.</p>
           </div>`;
 
-        setTimeout(() => { if (planCard.style.display === "block") showStickyBar(); }, 2000);
+        // Show sticky email bar AFTER plan is visible
+        setTimeout(() => {
+          if (planCard.style.display === "block") showStickyBar();
+        }, 2000);
 
       } catch (err) {
         planError.innerHTML = `
