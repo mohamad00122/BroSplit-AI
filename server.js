@@ -41,8 +41,8 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 // OPTIONAL: move these to .env for safety
 // STRIPE_PRICE_BASE=price_1RrLHFAhLaqVN2RsuypXJYSA   # $5
 // STRIPE_PRICE_PRO=price_1RwCtIAhLaqVN2RsgNnz8QSH     # $15
-const PRICE_BASE = process.env.STRIPE_PRICE_BASE || 'price_1RrLHFAhLaqVN2RsuypXJYSA';
-const PRICE_PRO  = process.env.STRIPE_PRICE_PRO  || 'price_1RwCtIAhLaqVN2RsgNnz8QSH';
+const PRICE_BASE = process.env.STRIPE_PRICE_BASE || 'price_1RsQJUAhLaqVN2Rssepup9EE';
+const PRICE_PRO  = process.env.STRIPE_PRICE_PRO  || 'price_1RsQJUAhLaqVN2Rssepup9EE';
 
 app.post("/api/checkout", async (req, res) => {
   try {
