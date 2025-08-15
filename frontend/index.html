@@ -1,602 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>This AI Just Exposed Why 90% of Gym Bros Never Get Jacked</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <title>Custom 6-Week Training + Nutrition Plan | BroSplit AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Get a personalized 6-week strength plan plus evidence-based macros and a 7-day meal plan. Built around your goals, equipment, schedule, and preferences." />
+  <!-- Open Graph -->
+  <meta property="og:title" content="Your Custom 6-Week Training + Nutrition Plan" />
+  <meta property="og:description" content="AI-tailored workouts + macros + 7-day meals. Built for your body and schedule." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://brosplit.org/" />
+  <meta property="og:image" content="https://brosplit.org/og-image.jpg" />
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Your Custom 6-Week Training + Nutrition Plan" />
+  <meta name="twitter:description" content="AI-tailored workouts + macros + 7-day meals." />
+  <meta name="twitter:image" content="https://brosplit.org/og-image.jpg" />
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0a0a0a;
-      color: #fff;
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-
-    .bg-gradient {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at 20% 80%, #ff6b6b 0%, transparent 50%),
-                  radial-gradient(circle at 80% 20%, #4ecdc4 0%, transparent 50%),
-                  radial-gradient(circle at 40% 40%, #45b7d1 0%, transparent 50%);
-      opacity: 0.1;
-      z-index: -1;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 2rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .breaking-news {
-      background: linear-gradient(135deg, #ff6b6b, #ff5252);
-      color: white;
-      padding: 0.5rem 1rem;
-      text-align: center;
-      font-weight: 700;
-      font-size: 0.9rem;
-      letter-spacing: 0.5px;
-      margin-bottom: 2rem;
-      border-radius: 8px;
-      text-transform: uppercase;
-      animation: pulse 2s infinite;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    .header h1 {
-      font-size: 3.5rem;
-      font-weight: 900;
-      margin-bottom: 1.5rem;
-      background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.02em;
-      line-height: 1.1;
-    }
-
-    .header .subtitle {
-      font-size: 1.4rem;
-      color: #e0e0e0;
-      margin-bottom: 2rem;
-      font-weight: 500;
-    }
-
-    .social-proof {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 2rem;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-    }
-
-    .social-proof .stat {
-      text-align: center;
-    }
-
-    .social-proof .stat .number {
-      font-size: 2rem;
-      font-weight: 800;
-      color: #ff6b6b;
-      display: block;
-    }
-
-    .social-proof .stat .label {
-      font-size: 0.9rem;
-      color: #a0a0a0;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .urgency-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: rgba(255, 107, 107, 0.1);
-      border: 1px solid rgba(255, 107, 107, 0.3);
-      color: #ff6b6b;
-      padding: 0.75rem 1.5rem;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 1.1rem;
-      margin-bottom: 3rem;
-      animation: glow 2s infinite alternate;
-    }
-
-    @keyframes glow {
-      from { box-shadow: 0 0 20px rgba(255, 107, 107, 0.3); }
-      to { box-shadow: 0 0 30px rgba(255, 107, 107, 0.6); }
-    }
-
-    .fear-section {
-      background: rgba(255, 107, 107, 0.05);
-      border: 1px solid rgba(255, 107, 107, 0.2);
-      padding: 2rem;
-      border-radius: 16px;
-      margin-bottom: 3rem;
-      text-align: center;
-    }
-
-    .fear-section h2 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #ff6b6b;
-    }
-
-    .fear-section p {
-      font-size: 1.1rem;
-      color: #e0e0e0;
-      margin-bottom: 1.5rem;
-    }
-
-    .fear-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-
-    .fear-item {
-      background: rgba(255, 255, 255, 0.03);
-      padding: 1rem;
-      border-radius: 8px;
-      border-left: 3px solid #ff6b6b;
-      text-align: left;
-    }
-
-    .solution-section {
-      background: rgba(76, 205, 196, 0.05);
-      border: 1px solid rgba(76, 205, 196, 0.2);
-      padding: 2rem;
-      border-radius: 16px;
-      margin-bottom: 3rem;
-      text-align: center;
-    }
-
-    .solution-section h2 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #4ecdc4;
-    }
-
-    .testimonials {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-      margin: 3rem 0;
-    }
-
-    .testimonial {
-      background: rgba(255, 255, 255, 0.03);
-      padding: 1.5rem;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .testimonial .quote {
-      font-size: 1.1rem;
-      margin-bottom: 1rem;
-      font-style: italic;
-      color: #e0e0e0;
-    }
-
-    .testimonial .author {
-      font-weight: 600;
-      color: #4ecdc4;
-      font-size: 0.9rem;
-    }
-
-    .testimonial .result {
-      color: #ff6b6b;
-      font-weight: 700;
-      font-size: 0.9rem;
-    }
-
-    .form-card {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(20px);
-      border-radius: 24px;
-      padding: 3rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    }
-
-    .form-header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    .form-header h3 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #fff;
-    }
-
-    .form-header p {
-      color: #a0a0a0;
-      font-size: 1.1rem;
-    }
-
-    .form-section {
-      margin-bottom: 2rem;
-    }
-
-    .form-section h4 {
-      font-size: 1.2rem;
-      margin-bottom: 1rem;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .form-group label {
-      font-weight: 500;
-      color: #e0e0e0;
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-    }
-
-    .form-group input,
-    .form-group select {
-      padding: 1rem 1.25rem;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-      background: rgba(255, 255, 255, 0.05);
-      color: #fff;
-    }
-
-    .form-group input::placeholder {
-      color: #666;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus {
-      outline: none;
-      border-color: #ff6b6b;
-      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    .strength-section {
-      background: rgba(255, 255, 255, 0.03);
-      padding: 2rem;
-      border-radius: 16px;
-      margin-top: 2rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .strength-section h4 {
-      color: #fff;
-      margin-bottom: 1rem;
-      font-size: 1.2rem;
-    }
-
-    .strength-section p {
-      color: #a0a0a0;
-      margin-bottom: 1.5rem;
-      font-size: 0.9rem;
-    }
-
-    .strength-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .strength-input {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .strength-input input {
-      padding: 1rem 3.5rem 1rem 1.25rem;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-      background: rgba(255, 255, 255, 0.05);
-      color: #fff;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .strength-input input:focus {
-      outline: none;
-      border-color: #ff6b6b;
-      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    .strength-input input::placeholder {
-      color: #666;
-    }
-
-    .strength-input::after {
-      content: 'lbs';
-      position: absolute;
-      right: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #666;
-      font-size: 0.9rem;
-      pointer-events: none;
-      z-index: 1;
-      margin-top: 0.75rem;
-    }
-
-    .strength-input .form-group label,
-    .strength-section .form-group label {
-      font-weight: 500;
-      color: #e0e0e0;
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      white-space: nowrap;
-    }
-
-    .submit-button {
-      width: 100%;
-      padding: 1.5rem 2rem;
-      background: linear-gradient(135deg, #ff6b6b, #ff5252);
-      color: white;
-      border: none;
-      border-radius: 16px;
-      font-size: 1.3rem;
-      font-weight: 800;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-top: 2rem;
-    }
-
-    .submit-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
-    }
-
-    .guarantee {
-      background: rgba(76, 175, 80, 0.1);
-      border: 1px solid rgba(76, 175, 80, 0.3);
-      padding: 1.5rem;
-      border-radius: 12px;
-      margin-top: 2rem;
-      text-align: center;
-    }
-
-    .guarantee h4 {
-      color: #4caf50;
-      margin-bottom: 0.5rem;
-    }
-
-    .scarcity {
-      background: rgba(255, 193, 7, 0.1);
-      border: 1px solid rgba(255, 193, 7, 0.3);
-      padding: 1rem;
-      border-radius: 8px;
-      margin: 1rem 0;
-      text-align: center;
-      color: #ffc107;
-      font-weight: 600;
-    }
-
-    .error-message {
-      background: rgba(244, 67, 54, 0.1);
-      color: #ff6b6b;
-      padding: 1rem;
-      border-radius: 12px;
-      margin: 1rem 0;
-      border: 1px solid rgba(244, 67, 54, 0.2);
-    }
-
-    .loading-message {
-      background: rgba(33, 150, 243, 0.1);
-      color: #4ecdc4;
-      padding: 1rem;
-      border-radius: 12px;
-      margin: 1rem 0;
-      border: 1px solid rgba(33, 150, 243, 0.2);
-      text-align: center;
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        padding: 1rem;
-      }
-      
-      .header h1 {
-        font-size: 2.5rem;
-      }
-      
-      .form-card {
-        padding: 2rem;
-      }
-      
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .social-proof {
-        gap: 1rem;
-      }
-
-      .strength-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-      
-      .strength-input {
-        min-width: unset;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .strength-input::after {
-        right: 0.75rem;
-        font-size: 0.8rem;
-      }
-      
-      .strength-input input {
-        padding-right: 3rem;
-      }
-    }
-
-    .pulse {
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.02); }
-      100% { transform: scale(1); }
-    }
-
-    /* Custom select styling */
-    select {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23666' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-      background-position: right 0.5rem center;
-      background-repeat: no-repeat;
-      background-size: 1.5em 1.5em;
-      padding-right: 2.5rem;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; line-height: 1.6; overflow-x: hidden; }
+    .bg-gradient { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background:
+      radial-gradient(circle at 20% 80%, #ff6b6b 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, #4ecdc4 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, #45b7d1 0%, transparent 50%); opacity: 0.1; z-index: -1; }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem; position: relative; z-index: 1; }
+    .breaking-news { background: linear-gradient(135deg, #ff6b6b, #ff5252); color: white; padding: 0.5rem 1rem; text-align: center; font-weight: 700; font-size: 0.9rem; letter-spacing: 0.5px; margin-bottom: 2rem; border-radius: 8px; text-transform: uppercase; animation: pulse 2s infinite; }
+    .header { text-align: center; margin-bottom: 3rem; }
+    .header h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 1.5rem; background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.02em; line-height: 1.1; }
+    .header .subtitle { font-size: 1.4rem; color: #e0e0e0; margin-bottom: 2rem; font-weight: 500; }
+    .social-proof { display: flex; justify-content: center; align-items: center; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .social-proof .stat { text-align: center; }
+    .social-proof .stat .number { font-size: 2rem; font-weight: 800; color: #ff6b6b; display: block; }
+    .social-proof .stat .label { font-size: 0.9rem; color: #a0a0a0; text-transform: uppercase; letter-spacing: 0.5px; }
+    .urgency-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255, 107, 107, 0.1); border: 1px solid rgba(255, 107, 107, 0.3); color: #ff6b6b; padding: 0.75rem 1.5rem; border-radius: 50px; font-weight: 700; font-size: 1.1rem; margin-bottom: 3rem; animation: glow 2s infinite alternate; cursor: pointer; }
+    @keyframes glow { from { box-shadow: 0 0 20px rgba(255, 107, 107, 0.3); } to { box-shadow: 0 0 30px rgba(255, 107, 107, 0.6); } }
+    .fear-section { background: rgba(255, 107, 107, 0.05); border: 1px solid rgba(255, 107, 107, 0.2); padding: 2rem; border-radius: 16px; margin-bottom: 3rem; text-align: center; }
+    .fear-section h2 { font-size: 2rem; margin-bottom: 1rem; color: #ff6b6b; }
+    .fear-section p { font-size: 1.1rem; color: #e0e0e0; margin-bottom: 1.5rem; }
+    .fear-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+    .fear-item { background: rgba(255, 255, 255, 0.03); padding: 1rem; border-radius: 8px; border-left: 3px solid #ff6b6b; text-align: left; }
+    .solution-section { background: rgba(76, 205, 196, 0.05); border: 1px solid rgba(76, 205, 196, 0.2); padding: 2rem; border-radius: 16px; margin-bottom: 3rem; text-align: center; }
+    .solution-section h2 { font-size: 2rem; margin-bottom: 1rem; color: #4ecdc4; }
+    .testimonials { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin: 3rem 0; }
+    .testimonial { background: rgba(255, 255, 255, 0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .testimonial .quote { font-size: 1.1rem; margin-bottom: 1rem; font-style: italic; color: #e0e0e0; }
+    .testimonial .author { font-weight: 600; color: #4ecdc4; font-size: 0.9rem; }
+    .testimonial .result { color: #ff6b6b; font-weight: 700; font-size: 0.9rem; }
+    .form-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border-radius: 24px; padding: 3rem; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+    .form-header { text-align: center; margin-bottom: 2rem; }
+    .form-header h3 { font-size: 2rem; margin-bottom: 1rem; color: #fff; }
+    .form-header p { color: #a0a0a0; font-size: 1.1rem; }
+    .form-section { margin-bottom: 2rem; }
+    .form-section h4 { font-size: 1.2rem; margin-bottom: 1rem; color: #fff; display: flex; align-items: center; gap: 0.5rem; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-weight: 500; color: #e0e0e0; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+    .form-group input, .form-group select { padding: 1rem 1.25rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.05); color: #fff; }
+    .form-group input::placeholder { color: #666; }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: #ff6b6b; box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1); background: rgba(255, 255, 255, 0.08); }
+    .strength-section { background: rgba(255, 255, 255, 0.03); padding: 2rem; border-radius: 16px; margin-top: 2rem; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .strength-section h4 { color: #fff; margin-bottom: 1rem; font-size: 1.2rem; }
+    .strength-section p { color: #a0a0a0; margin-bottom: 1.5rem; font-size: 0.9rem; }
+    .strength-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+    .strength-input { position: relative; display: flex; flex-direction: column; }
+    .strength-input input { padding: 1rem 3.5rem 1rem 1.25rem; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; font-size: 1rem; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.05); color: #fff; width: 100%; box-sizing: border-box; }
+    .strength-input input:focus { outline: none; border-color: #ff6b6b; box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1); background: rgba(255, 255, 255, 0.08); }
+    .strength-input input::placeholder { color: #666; }
+    .strength-input::after { content: 'lbs'; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: #666; font-size: 0.9rem; pointer-events: none; z-index: 1; margin-top: 0.75rem; }
+    .submit-button { width: 100%; padding: 1.5rem 2rem; background: linear-gradient(135deg, #ff6b6b, #ff5252); color: white; border: none; border-radius: 16px; font-size: 1.3rem; font-weight: 800; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2rem; }
+    .submit-button:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4); }
+    .guarantee { background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.3); padding: 1.5rem; border-radius: 12px; margin-top: 2rem; text-align: center; }
+    .guarantee h4 { color: #4caf50; margin-bottom: 0.5rem; }
+    .scarcity { background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); padding: 1rem; border-radius: 8px; margin: 1rem 0; text-align: center; color: #ffc107; font-weight: 600; }
+    .error-message { background: rgba(244, 67, 54, 0.1); color: #ff6b6b; padding: 1rem; border-radius: 12px; margin: 1rem 0; border: 1px solid rgba(244, 67, 54, 0.2); }
+    .loading-message { background: rgba(33, 150, 243, 0.1); color: #4ecdc4; padding: 1rem; border-radius: 12px; margin: 1rem 0; border: 1px solid rgba(33, 150, 243, 0.2); text-align: center; }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.02)} 100%{transform:scale(1)} }
+    @media (max-width: 768px) { .container{padding:1rem} .header h1{font-size:2.5rem} .form-card{padding:2rem} .form-grid{grid-template-columns:1fr} .social-proof{gap:1rem} .strength-grid{grid-template-columns:1fr;gap:1rem} }
+    @media (max-width: 480px) { .strength-input::after{ right:.75rem; font-size:.8rem } .strength-input input{ padding-right:3rem } }
+    select { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23666' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
   </style>
 </head>
 <body>
   <div class="bg-gradient"></div>
-  
+
   <div class="container">
-    <div class="breaking-news">
-      🚨 BREAKING: New AI Study Reveals the #1 Reason Most Gym Bros Stay Weak
-    </div>
+    <div class="breaking-news">🚨 BREAKING: New AI Study Reveals the #1 Reason Most Gym-Goers Stay Stuck</div>
 
     <div class="header">
-      <h1>This AI Just Exposed Why 90% of Gym Bros Never Get Jacked</h1>
-      <p class="subtitle">The shocking truth about cookie-cutter programs that's keeping you small (and the 6-week solution that's already transformed 12,847 lifters)</p>
-      
+      <h1>This AI Just Exposed Why 90% of Lifters Never Get Jacked</h1>
+      <p class="subtitle">Cookie-cutter plans keep you small. Get a custom 6-week split — and now, optional diet guidance that actually fits your life.</p>
       <div class="social-proof">
-        <div class="stat">
-          <span class="number">12,847</span>
-          <span class="label">Bros Transformed</span>
-        </div>
-        <div class="stat">
-          <span class="number">89%</span>
-          <span class="label">Saw Gains Week 1</span>
-        </div>
-        <div class="stat">
-          <span class="number">4.9★</span>
-          <span class="label">Average Rating</span>
-        </div>
+        <div class="stat"><span class="number">12,847</span><span class="label">Lifters Transformed</span></div>
+        <div class="stat"><span class="number">89%</span><span class="label">Saw Gains Week 1</span></div>
+        <div class="stat"><span class="number">4.9★</span><span class="label">Average Rating</span></div>
       </div>
-      
-      <div class="urgency-badge" id="scrollToForm" style="cursor:pointer;">
-        <span>⚡</span>
-        <span>Limited Time: Only $5 (Usually $47)</span>
-      </div>
+      <div class="urgency-badge" id="scrollToForm"><span>⚡</span><span>Limited Time: From $5</span></div>
+    </div>
 
     <div class="fear-section">
       <h2>⚠️ Are You Making These Deadly Gym Mistakes?</h2>
       <p>Every day you follow a generic program, you're actually moving BACKWARDS. Here's what's sabotaging your gains:</p>
       <div class="fear-list">
-        <div class="fear-item">
-          <strong>❌ Following Instagram Influencer Routines</strong><br>
-          Their genetics ≠ Your genetics
-        </div>
-        <div class="fear-item">
-          <strong>❌ Using Cookie-Cutter Programs</strong><br>
-          One size fits none
-        </div>
-        <div class="fear-item">
-          <strong>❌ Ignoring Your Weak Points</strong><br>
-          Your bench will always suck
-        </div>
-        <div class="fear-item">
-          <strong>❌ Random Volume & Intensity</strong><br>
-          Spinning your wheels forever
-        </div>
+        <div class="fear-item"><strong>❌ Following Influencer Routines</strong><br />Their genetics ≠ Your genetics</div>
+        <div class="fear-item"><strong>❌ Using Cookie-Cutter Programs</strong><br />One size fits none</div>
+        <div class="fear-item"><strong>❌ Ignoring Weak Points</strong><br />Your bench will always stall</div>
+        <div class="fear-item"><strong>❌ Random Volume & Intensity</strong><br />Spinning your wheels forever</div>
       </div>
     </div>
 
     <div class="solution-section">
       <h2>🤖 The BroSplit AI Revolution</h2>
-      <p>While other guys are still copying routines from 2019 YouTube videos, smart lifters are using AI to create programs that actually work for THEIR body, THEIR goals, and THEIR life.</p>
+      <p>Smart lifters use AI to create programs built for <em>their</em> body, goals, and schedule — and now, macros + meals, too.</p>
     </div>
 
     <div class="testimonials">
-      <div class="testimonial">
-        <div class="quote">"Bro, I've been lifting for 3 years and got more gains in 6 weeks with this AI program than the entire previous year. My bench finally broke through that plateau."</div>
-        <div class="author">- Jake M., 24</div>
-        <div class="result">+35lbs bench, +50lbs squat</div>
-      </div>
-      <div class="testimonial">
-        <div class="quote">"As a busy dad, I needed something that actually worked with my schedule. This AI nailed it. My wife keeps asking what I'm doing different."</div>
-        <div class="author">- Marcus T., 31</div>
-        <div class="result">Lost 18lbs, gained muscle</div>
-      </div>
-      <div class="testimonial">
-        <div class="quote">"Finally, a program that doesn't ignore my shoulder injury. The AI worked around it perfectly and I'm stronger than ever."</div>
-        <div class="author">- Alex R., 28</div>
-        <div class="result">PR'd every lift safely</div>
-      </div>
+      <div class="testimonial"><div class="quote">"More gains in 6 weeks than the last year. Finally broke my bench plateau."</div><div class="author">- Jake M., 24</div><div class="result">+35 lbs bench, +50 lbs squat</div></div>
+      <div class="testimonial"><div class="quote">"Fits my busy dad schedule. My wife asked what I'm doing different."</div><div class="author">- Marcus T., 31</div><div class="result">Lost 18 lbs, gained muscle</div></div>
+      <div class="testimonial"><div class="quote">"Worked around my shoulder and I still PR'd safely."</div><div class="author">- Alex R., 28</div><div class="result">PRs across the board</div></div>
     </div>
 
     <div class="form-card">
       <div class="form-header">
-        <h3>🔥 Get Your Custom BroSplit Now</h3>
-        <p>Join the thousands who've already unlocked their genetic potential</p>
+        <h3>🔥 Get Your Custom Plan</h3>
+        <p>Choose workouts only or bundle with diet guidance (macros + meals)</p>
       </div>
-      
-      <div class="scarcity">
-        ⏰ 2,847 people got their custom plan this week. Don't be the one still doing generic routines.
-      </div>
-      
+
+      <div class="scarcity">⏰ 2,847 people got their custom plan this week. Don’t be the one still doing generic routines.</div>
+
       <form id="planForm" autocomplete="off">
+        <!-- Plan tier -->
+        <div class="form-section">
+          <h4>🧾 Choose Your Plan</h4>
+          <div class="form-grid">
+            <label class="form-group" style="flex-direction:row;align-items:center;gap:.75rem;">
+              <input type="radio" name="planType" value="workout" checked />
+              <span>Workout Only — $5 (6-Week Training Plan)</span>
+            </label>
+            <label class="form-group" style="flex-direction:row;align-items:center;gap:.75rem;">
+              <input type="radio" name="planType" value="pro" />
+              <span>Training + Nutrition — $15 (Macros + 7-Day Meals + Grocery List)</span>
+            </label>
+          </div>
+        </div>
+
         <div class="form-section">
           <h4>💪 Your Training Setup</h4>
           <div class="form-grid">
             <div class="form-group">
-              <label>
-                <span>📅</span>
-                How many days can you commit?
-              </label>
+              <label><span>📅</span>How many days can you commit?</label>
               <select name="daysPerWeek" required>
                 <option value="">Choose your frequency...</option>
                 <option value="3">3 Days (Minimum for gains)</option>
@@ -605,12 +157,8 @@
                 <option value="6">6 Days (Beast mode)</option>
               </select>
             </div>
-
             <div class="form-group">
-              <label>
-                <span>🏋️</span>
-                What's your gym situation?
-              </label>
+              <label><span>🏋️</span>What's your gym situation?</label>
               <select name="equipment" required>
                 <option value="">Select your setup...</option>
                 <option value="commercial-gym">Full Gym Access (Best gains)</option>
@@ -618,12 +166,8 @@
                 <option value="body-weight">Bodyweight Only (We'll work with it)</option>
               </select>
             </div>
-
             <div class="form-group">
-              <label>
-                <span>📊</span>
-                How long have you been lifting?
-              </label>
+              <label><span>📊</span>How long have you been lifting?</label>
               <select name="experience" required>
                 <option value="">Be honest...</option>
                 <option value="beginner">Beginner (0-1 years)</option>
@@ -631,13 +175,9 @@
                 <option value="advanced">Advanced (3+ years)</option>
               </select>
             </div>
-
             <div class="form-group">
-              <label>
-                <span>🎯</span>
-                What's your #1 goal right now?
-              </label>
-              <input type="text" name="goal" required placeholder="build bigger arms, lose the gut, get jacked">
+              <label><span>🎯</span>Your #1 goal</label>
+              <input type="text" name="goal" required placeholder="build muscle, lose fat, recomp">
             </div>
           </div>
         </div>
@@ -646,69 +186,90 @@
           <h4>👤 Tell Us About You</h4>
           <div class="form-grid">
             <div class="form-group">
-              <label>
-                <span>📧</span>
-                Email (where we'll send your plan)
-              </label>
+              <label><span>📧</span>Email (where we'll send your plan)</label>
               <input type="email" name="email" required placeholder="youremail@example.com">
             </div>
-
             <div class="form-group">
-              <label>
-                <span>🎂</span>
-                Age
-              </label>
-              <input type="number" name="age" min="13" max="80" required placeholder="25">
+              <label><span>🎂</span>Age</label>
+              <input type="number" name="age" min="13" max="90" required placeholder="25">
             </div>
-
             <div class="form-group">
-              <label>
-                <span>⚧</span>
-                Sex
-              </label>
+              <label><span>⚧</span>Sex</label>
               <select name="sex" required>
                 <option value="">Select...</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
-                <option value="other">Other</option>
               </select>
             </div>
-
             <div class="form-group">
-              <label>
-                <span>⚖️</span>
-                Current weight
-              </label>
+              <label><span>⚖️</span>Current weight (lbs)</label>
               <input type="number" name="bodyweight" min="80" max="400" placeholder="170">
             </div>
           </div>
         </div>
 
-        <div class="form-section">
-          <h4>🎛️ Customization (This is where the magic happens)</h4>
+        <!-- Nutrition fields (shown for Pro) -->
+        <div class="form-section" id="nutritionFields" style="display:none;">
+          <h4>🥗 Nutrition Preferences (for Training + Nutrition plan)</h4>
           <div class="form-grid">
             <div class="form-group">
-              <label>
-                <span>💪</span>
-                What needs the most work?
-              </label>
-              <input type="text" name="focusMuscle" placeholder="arms, chest, back, legs">
+              <label><span>📏</span>Height</label>
+              <input type="text" name="height" placeholder="5'10&quot; or 178 cm">
             </div>
-
             <div class="form-group">
-              <label>
-                <span>🩹</span>
-                Any injuries we should know about?
-              </label>
-              <input type="text" name="injuries" placeholder="bad shoulder, knee issues">
+              <label><span>🏃</span>Daily activity (outside the gym)</label>
+              <select name="activity">
+                <option value="light">Light (walks/desk)</option>
+                <option value="moderate" selected>Moderate</option>
+                <option value="very_active">Very active</option>
+                <option value="sedentary">Sedentary</option>
+              </select>
             </div>
-
             <div class="form-group">
-              <label>
-                <span>❌</span>
-                Exercises you absolutely hate?
-              </label>
-              <input type="text" name="dislikes" placeholder="burpees, lunges, cardio">
+              <label><span>📈</span>Training load (gym volume)</label>
+              <select name="training_load">
+                <option value="moderate" selected>Moderate</option>
+                <option value="light">Light</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><span>🍽️</span>Meals per day</label>
+              <select name="meals_per_day">
+                <option value="3">3</option>
+                <option value="4" selected>4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><span>✅</span>Diet preferences</label>
+              <select name="diet_prefs" multiple>
+                <option value="none" selected>None</option>
+                <option value="vegetarian">Vegetarian</option>
+                <option value="vegan">Vegan</option>
+                <option value="pescatarian">Pescatarian</option>
+                <option value="halal">Halal</option>
+                <option value="kosher">Kosher</option>
+                <option value="dairy_free">Dairy-free</option>
+                <option value="gluten_free">Gluten-free</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><span>🌍</span>Cuisine preferences (comma-separated)</label>
+              <input type="text" name="cuisine_prefs" placeholder="Mediterranean, Mexican">
+            </div>
+            <div class="form-group">
+              <label><span>🚫</span>Food allergies (comma-separated)</label>
+              <input type="text" name="allergies" placeholder="peanuts, shellfish">
+            </div>
+            <div class="form-group">
+              <label><span>💸</span>Budget</label>
+              <select name="budget_level">
+                <option value="normal" selected>Normal</option>
+                <option value="tight">Tight</option>
+                <option value="flex">Flex</option>
+              </select>
             </div>
           </div>
         </div>
@@ -718,40 +279,18 @@
             <h4>💪 Current Strength (Optional but recommended)</h4>
             <p>Help us dial in your starting weights perfectly. Skip if you're not sure.</p>
             <div class="strength-grid">
-              <div class="form-group">
-                <label>Bench Press Max</label>
-                <div class="strength-input">
-                  <input type="number" name="bench" placeholder="225">
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Squat Max</label>
-                <div class="strength-input">
-                  <input type="number" name="squat" placeholder="315">
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Deadlift Max</label>
-                <div class="strength-input">
-                  <input type="number" name="deadlift" placeholder="405">
-                </div>
-              </div>
-              <div class="form-group">
-                <label>Overhead Press Max</label>
-                <div class="strength-input">
-                  <input type="number" name="ohp" placeholder="135">
-                </div>
-              </div>
+              <div class="form-group"><label>Bench Press Max</label><div class="strength-input"><input type="number" name="bench" placeholder="225"></div></div>
+              <div class="form-group"><label>Squat Max</label><div class="strength-input"><input type="number" name="squat" placeholder="315"></div></div>
+              <div class="form-group"><label>Deadlift Max</label><div class="strength-input"><input type="number" name="deadlift" placeholder="405"></div></div>
+              <div class="form-group"><label>Overhead Press Max</label><div class="strength-input"><input type="number" name="ohp" placeholder="135"></div></div>
             </div>
           </div>
         </div>
 
         <div id="error"></div>
         <div id="loading"></div>
-        
-        <button type="submit" id="buyBtn" class="submit-button">
-          🚀 Get My Custom BroSplit • $5
-        </button>
+
+        <button type="submit" id="buyBtn" class="submit-button">🚀 Get My Custom BroSplit • $5</button>
 
         <div class="guarantee">
           <h4>💯 No-BS Guarantee</h4>
@@ -759,51 +298,138 @@
         </div>
       </form>
     </div>
+
+    <footer style="margin:3rem 0 1rem; text-align:center; color:#a0a0a0; font-size:.9rem;">
+      <div style="margin-bottom:.75rem;">
+        <a href="/privacy.html" style="color:#e0e0e0; margin:0 .75rem;">Privacy</a> |
+        <a href="/terms.html" style="color:#e0e0e0; margin:0 .75rem;">Terms</a> |
+        <a href="/refund.html" style="color:#e0e0e0; margin:0 .75rem;">Refunds</a> |
+        <a href="mailto:support@brosplit.org" style="color:#e0e0e0; margin:0 .75rem;">Support</a>
+      </div>
+      <div style="max-width:900px; margin:0 auto;">
+        <small>Fitness and nutrition content is general guidance and not medical advice.</small>
+      </div>
+    </footer>
   </div>
 
   <script>
     const API_URL = window.location.origin;
-    
+
+    // Smooth scroll to form
+    document.getElementById('scrollToForm').addEventListener('click', () => {
+      document.getElementById('planForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // Toggle nutrition fields & price text
+    const planRadios = document.querySelectorAll('input[name="planType"]');
+    const nutritionFields = document.getElementById('nutritionFields');
+    const buyBtn = document.getElementById('buyBtn');
+
+    function updateTierUI() {
+      const planType = document.querySelector('input[name="planType"]:checked').value;
+      const isPro = planType === 'pro';
+      nutritionFields.style.display = isPro ? 'block' : 'none';
+      buyBtn.textContent = isPro ? '🚀 Get Training + Nutrition • $15' : '🚀 Get My Custom BroSplit • $5';
+      // Make height/weight required for Pro
+      document.querySelector('input[name="height"]').required = isPro;
+      document.querySelector('input[name="bodyweight"]').required = isPro;
+    }
+    planRadios.forEach(r => r.addEventListener('change', updateTierUI));
+    updateTierUI();
+
+    // Helpers
+    function heightToCm(h) {
+      if (!h) return null;
+      const cm = String(h).match(/(\d+)\s*cm/i);
+      if (cm) return parseInt(cm[1], 10);
+      const feetInches = String(h).match(/(\d+)\D+(\d+)/); // 5'10, 5 ft 10
+      if (feetInches) { const ft = parseInt(feetInches[1],10), inch = parseInt(feetInches[2],10); return Math.round(ft*30.48 + inch*2.54); }
+      const onlyInches = String(h).match(/^\d+$/);
+      if (onlyInches) return Math.round(parseInt(h,10)*2.54);
+      return null;
+    }
+    function lbsToKg(lbs) { return lbs ? Math.round((parseFloat(lbs) / 2.20462) * 10) / 10 : null; }
+    function mapGoal(g) {
+      const s = (g || '').toLowerCase();
+      if (s.includes('cut') || s.includes('lose') || s.includes('fat')) return 'cut';
+      if (s.includes('gain') || s.includes('bulk') || s.includes('muscle')) return 'gain';
+      return 'recomp';
+    }
+    function getMultiSelect(name) {
+      const el = document.querySelector(`select[name="${name}"]`);
+      return el ? Array.from(el.selectedOptions).map(o => o.value) : [];
+    }
+
     document.getElementById('planForm').onsubmit = async (e) => {
       e.preventDefault();
-      
-      const buyBtn = document.getElementById('buyBtn');
+
       const errorDiv = document.getElementById('error');
       const loadingDiv = document.getElementById('loading');
-      
-      buyBtn.disabled = true;
-      buyBtn.classList.add('pulse');
-      errorDiv.innerHTML = "";
-      loadingDiv.innerHTML = '<div class="loading-message">🔄 Creating your custom plan...</div>';
+      errorDiv.innerHTML = ""; loadingDiv.innerHTML = "";
+      buyBtn.disabled = true; buyBtn.classList.add('pulse');
 
-      // Gather all fields
-      let formData = Object.fromEntries(new FormData(e.target));
-      formData.email = formData.email.trim().toLowerCase();
-      formData.injuries = formData.injuries
-        ? formData.injuries.split(',').map(x => x.trim()).filter(Boolean)
-        : [];
-      formData.dislikes = formData.dislikes
-        ? formData.dislikes.split(',').map(x => x.trim()).filter(Boolean)
-        : [];
-      formData.lifts = {
-        bench: formData.bench || null,
-        squat: formData.squat || null,
-        deadlift: formData.deadlift || null,
-        ohp: formData.ohp || null
+      const fd = new FormData(e.target);
+      const planType = (fd.get('planType') || 'workout');
+      const isPro = planType === 'pro';
+
+      // Collect & normalize
+      let formData = Object.fromEntries(fd);
+      const injuries = formData.injuries ? formData.injuries.split(',').map(s=>s.trim()).filter(Boolean) : [];
+      const dislikes = formData.dislikes ? formData.dislikes.split(',').map(s=>s.trim()).filter(Boolean) : [];
+      const cuisine_prefs = formData.cuisine_prefs ? formData.cuisine_prefs.split(',').map(s=>s.trim()).filter(Boolean) : [];
+      const allergies = formData.allergies ? formData.allergies.split(',').map(s=>s.trim()).filter(Boolean) : [];
+
+      const height_cm = heightToCm(formData.height);
+      const weight_kg = lbsToKg(formData.bodyweight);
+      const diet_prefs = getMultiSelect('diet_prefs');
+
+      // Client-side validation for Pro
+      if (isPro) {
+        const missing = [];
+        if (!height_cm) missing.push('height');
+        if (!weight_kg) missing.push('weight');
+        if (!formData.sex) missing.push('sex');
+        if (!formData.age) missing.push('age');
+        if (missing.length) {
+          errorDiv.innerHTML = `<div class="error-message">⚠️ For the Training + Nutrition plan, please provide: ${missing.join(', ')}.</div>`;
+          buyBtn.disabled = false; buyBtn.classList.remove('pulse');
+          return;
+        }
+      }
+
+      // Strengths
+      const lifts = { bench: formData.bench||null, squat: formData.squat||null, deadlift: formData.deadlift||null, ohp: formData.ohp||null };
+
+      // Build payload we’ll need on success page
+      const saved = {
+        email: (formData.email || '').trim().toLowerCase(),
+        daysPerWeek: formData.daysPerWeek, equipment: formData.equipment, experience: formData.experience,
+        goal: formData.goal, focusMuscle: formData.focusMuscle || "", injuries, dislikes,
+        sex: formData.sex, age: formData.age ? Number(formData.age) : null,
+        bodyweight: formData.bodyweight ? Number(formData.bodyweight) : null, lifts,
+        // Nutrition inputs
+        height_cm, weight_kg,
+        activity: formData.activity || 'moderate',
+        training_load: formData.training_load || 'moderate',
+        meals_per_day: formData.meals_per_day ? Number(formData.meals_per_day) : 4,
+        diet_prefs: diet_prefs.length ? diet_prefs : ['none'],
+        cuisine_prefs, allergies,
+        budget_level: formData.budget_level || 'normal',
+        // Normalized goal for nutrition endpoint
+        nutrition_goal: mapGoal(formData.goal)
       };
-      delete formData.bench;
-      delete formData.squat;
-      delete formData.deadlift;
-      delete formData.ohp;
 
-      // Save for use on the success page
-      localStorage.setItem('brosplitForm', JSON.stringify(formData));
+      // Persist for success.html
+      localStorage.setItem('brosplitForm', JSON.stringify(saved));
+      localStorage.setItem('planType', planType);
 
       try {
+        loadingDiv.innerHTML = '<div class="loading-message">🔄 Taking you to secure checkout…</div>';
+        // Only send planType to checkout; server maps to the right Price ID.
         const res = await fetch(`${API_URL}/api/checkout`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
+          body: JSON.stringify({ planType })
         });
         if (!res.ok) throw new Error("Could not start payment.");
         const { url } = await res.json();
@@ -811,25 +437,9 @@
       } catch (err) {
         errorDiv.innerHTML = `<div class="error-message">⚠️ Error: ${err.message || "Could not connect to backend."}</div>`;
         loadingDiv.innerHTML = "";
+        buyBtn.disabled = false; buyBtn.classList.remove('pulse');
       }
-      
-      buyBtn.disabled = false;
-      buyBtn.classList.remove('pulse');
     };
-
-    // Interactive focus/blur feedback (unchanged)
-    document.querySelectorAll('input, select').forEach(el => {
-      el.addEventListener('focus', () => el.style.transform = 'scale(1.02)');
-      el.addEventListener('blur',  () => el.style.transform = 'scale(1)');
-    });
-
-    // New: Scroll to form when urgency badge is clicked
-  document.getElementById('scrollToForm').addEventListener('click', () => {
-    document.getElementById('planForm').scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-  });
-});
   </script>
 </body>
 </html>

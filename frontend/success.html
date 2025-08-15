@@ -5,611 +5,76 @@
   <title>BroSplit AI — Your Plan Is Ready</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0a0a0a;
-      color: #fff;
-      line-height: 1.6;
-      overflow-x: hidden;
-      min-height: 100vh;
-    }
-
-    .bg-gradient {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at 20% 80%, #ff6b6b 0%, transparent 50%),
-                  radial-gradient(circle at 80% 20%, #4ecdc4 0%, transparent 50%),
-                  radial-gradient(circle at 40% 40%, #45b7d1 0%, transparent 50%);
-      opacity: 0.1;
-      z-index: -1;
-    }
-
-    /* Sticky Email Bar */
-    .sticky-email-bar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: rgba(255, 107, 107, 0.95);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255, 107, 107, 0.3);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-      z-index: 1000;
-      transform: translateY(-100%);
-      transition: transform 0.4s ease-out;
-      animation: slideDownSticky 0.6s ease-out forwards;
-    }
-
-    .sticky-email-bar.show {
-      transform: translateY(0);
-    }
-
-    .sticky-content {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      padding: 1rem;
-      max-width: 1000px;
-      margin: 0 auto;
-      position: relative;
-    }
-
-    .sticky-text {
-      color: #fff;
-      font-weight: 600;
-      font-size: 1rem;
-    }
-
-    .btn-sticky {
-      background: rgba(255, 255, 255, 0.2);
-      color: #fff;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      padding: 0.6rem 1.5rem;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 0.95rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .btn-sticky:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .btn-dismiss {
-      background: transparent;
-      color: rgba(255, 255, 255, 0.7);
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      padding: 0.25rem 0.5rem;
-      border-radius: 6px;
-      transition: all 0.3s ease;
-      position: absolute;
-      right: 1rem;
-    }
-
-    .btn-dismiss:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 2rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 3rem;
-      animation: slideDown 0.8s ease-out;
-    }
-
-    .header h1 {
-      font-size: 3.5rem;
-      font-weight: 900;
-      margin-bottom: 1rem;
-      background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.02em;
-      line-height: 1.1;
-    }
-
-    .header .subtitle {
-      font-size: 1.2rem;
-      color: #e0e0e0;
-      font-weight: 400;
-    }
-
-    .success-card {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(20px);
-      border-radius: 24px;
-      padding: 3rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      text-align: center;
-      margin-bottom: 2rem;
-      position: relative;
-      overflow: hidden;
-      animation: slideUp 0.8s ease-out 0.2s both;
-    }
-
-    .success-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-      transition: left 0.8s ease;
-    }
-
-    .success-card:hover::before {
-      left: 100%;
-    }
-
-    .success-title {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #4ecdc4;
-      margin-bottom: 1rem;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    }
-
-    .success-icons {
-      display: flex;
-      justify-content: center;
-      gap: 2rem;
-      margin: 2rem 0;
-    }
-
-    .success-icon {
-      font-size: 4rem;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-      animation: bounce 2s infinite;
-    }
-
-    .success-icon:nth-child(2) { animation-delay: 0.2s; }
-    .success-icon:nth-child(3) { animation-delay: 0.4s; }
-
-    .success-description {
-      font-size: 1.2rem;
-      color: #e0e0e0;
-      margin-bottom: 2rem;
-      font-weight: 400;
-    }
-
-    .button-group {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      padding: 1rem 2.5rem;
-      border: none;
-      border-radius: 16px;
-      font-size: 1.1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      position: relative;
-      overflow: hidden;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-      transition: left 0.6s ease;
-    }
-
-    .btn:hover::before {
-      left: 100%;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #ff6b6b, #ff5252);
-      color: white;
-      box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.1);
-      color: #e0e0e0;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .btn-secondary:hover {
-      transform: translateY(-2px);
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none !important;
-    }
-
-    .loading-card {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(20px);
-      border-radius: 24px;
-      padding: 3rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      text-align: center;
-      margin: 2rem 0;
-      animation: slideUp 0.6s ease-out;
-    }
-
-    .loading-title {
-      font-size: 1.8rem;
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 1rem;
-    }
-
-    .loading-description {
-      font-size: 1.1rem;
-      color: #e0e0e0;
-      margin-bottom: 2rem;
-    }
-
-    .loading-icons {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin: 2rem 0;
-    }
-
-    .loading-icon {
-      font-size: 3rem;
-      animation: pulse 1.5s infinite;
-    }
-
-    .loading-icon:nth-child(2) { animation-delay: 0.3s; }
-    .loading-icon:nth-child(3) { animation-delay: 0.6s; }
-
-    .progress-container {
-      width: 100%;
-      height: 8px;
-      background: rgba(255, 107, 107, 0.2);
-      border-radius: 4px;
-      overflow: hidden;
-      margin: 2rem 0;
-    }
-
-    .progress-bar {
-      height: 100%;
-      background: linear-gradient(135deg, #ff6b6b, #ff5252);
-      border-radius: 4px;
-      animation: loading 3s ease-in-out infinite;
-    }
-
-    .plan-card {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(20px);
-      border-radius: 24px;
-      padding: 3rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      margin-bottom: 2rem;
-      animation: slideUp 0.8s ease-out;
-    }
-
-    .plan-header {
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }
-
-    .plan-title {
-      font-size: 2.2rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 1rem;
-    }
-
-    .plan-subtitle {
-      font-size: 1.1rem;
-      color: #e0e0e0;
-      font-weight: 400;
-    }
-
-    #plan {
-      background: rgba(255, 255, 255, 0.95);
-      color: #2d3748;
-      border-radius: 16px;
-      padding: 2.5rem;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      font-size: 1rem;
-      line-height: 1.7;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      max-width: 100%;
-      box-sizing: border-box;
-    }
-
-    #plan h1 {
-      color: #2d3748;
-      font-size: 2.2rem;
-      font-weight: 800;
-      text-align: center;
-      margin: 0 0 2rem 0;
-      padding: 1.5rem 0;
-      border-bottom: 3px solid #ff6b6b;
-      background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    #plan h2 {
-      color: #2d3748;
-      font-size: 1.4rem;
-      font-weight: 700;
-      margin: 2.5rem 0 1.5rem 0;
-      padding: 1rem 1.5rem;
-      background: linear-gradient(135deg, #f7fafc, #edf2f7);
-      border-radius: 12px;
-      border-left: 4px solid #ff6b6b;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-
-    #plan h3 {
-      color: #4ecdc4;
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin: 1.5rem 0 1rem 0;
-      padding: 0.8rem 0;
-      border-bottom: 2px solid #e2e8f0;
-    }
-
-    #plan ul, #plan ol {
-      padding-left: 0;
-      margin-bottom: 2rem;
-      list-style: none;
-    }
-
-    #plan li {
-      margin-bottom: 0.8rem;
-      padding: 1rem 1.5rem;
-      background: rgba(255,255,255,0.9);
-      border-radius: 12px;
-      border-left: 4px solid #4ecdc4;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-
-    #plan li:hover {
-      background: rgba(255,255,255,1);
-      transform: translateX(8px);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    }
-
-    #plan p {
-      margin: 1.5rem 0;
-      padding: 1.5rem;
-      background: rgba(255,255,255,0.9);
-      border-radius: 12px;
-      border-left: 4px solid #ff6b6b;
-      font-size: 1rem;
-      line-height: 1.6;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      max-width: 100%;
-      box-sizing: border-box;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-
-    #plan hr {
-      margin: 3rem 0;
-      border: none;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #ff6b6b, transparent);
-    }
-
-    .error-card {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(20px);
-      border-radius: 24px;
-      padding: 3rem;
-      border: 1px solid rgba(255, 107, 107, 0.3);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      text-align: center;
-      margin: 2rem 0;
-      animation: slideUp 0.6s ease-out;
-    }
-
-    .error-title {
-      font-size: 1.8rem;
-      font-weight: 600;
-      color: #ff6b6b;
-      margin-bottom: 1rem;
-    }
-
-    .error-description {
-      font-size: 1.1rem;
-      color: #e0e0e0;
-      margin-bottom: 2rem;
-    }
-
-    .guarantee {
-      background: rgba(76, 175, 80, 0.1);
-      border: 1px solid rgba(76, 175, 80, 0.3);
-      padding: 1.5rem;
-      border-radius: 12px;
-      margin-top: 2rem;
-      text-align: center;
-    }
-
-    .guarantee h4 {
-      color: #4caf50;
-      margin-bottom: 0.5rem;
-    }
-
-    /* Animations */
-    @keyframes slideDown {
-      from { transform: translateY(-50px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    @keyframes slideDownSticky {
-      from { transform: translateY(-100%); }
-      to { transform: translateY(0); }
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(50px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-15px); }
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.1); opacity: 0.7; }
-    }
-
-    @keyframes loading {
-      0% { width: 0%; }
-      50% { width: 80%; }
-      100% { width: 100%; }
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .container {
-        padding: 1rem;
-      }
-      
-      .header h1 {
-        font-size: 2.5rem;
-      }
-      
-      .success-card {
-        padding: 2rem;
-      }
-      
-      .success-title {
-        font-size: 2rem;
-      }
-      
-      .success-icons {
-        gap: 1rem;
-      }
-      
-      .success-icon {
-        font-size: 3rem;
-      }
-      
-      .button-group {
-        flex-direction: column;
-        gap: 1rem;
-      }
-      
-      .btn {
-        width: 100%;
-        justify-content: center;
-      }
-      
-      .plan-card {
-        padding: 2rem;
-      }
-      
-      #plan {
-        padding: 1.5rem;
-        font-size: 0.9rem;
-      }
-      
-      #plan h1 {
-        font-size: 1.8rem;
-      }
-      
-      #plan h2 {
-        font-size: 1.2rem;
-        padding: 0.8rem 1rem;
-      }
-
-      .sticky-content {
-        flex-direction: column;
-        gap: 0.5rem;
-        text-align: center;
-        padding: 0.8rem;
-      }
-
-      .sticky-text {
-        font-size: 0.9rem;
-      }
-
-      .btn-sticky {
-        font-size: 0.85rem;
-        padding: 0.5rem 1.2rem;
-      }
-
-      .btn-dismiss {
-        position: static;
-        margin-top: 0.5rem;
-      }
-    }
-
-    /* Success animation */
-    .celebrate {
-      animation: celebrate 0.8s ease-out;
-    }
-
-    @keyframes celebrate {
-      0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
-      50% { transform: scale(1.05) rotate(2deg); opacity: 1; }
-      100% { transform: scale(1) rotate(0deg); opacity: 1; }
-    }
-
-    /* Adjust container top padding when sticky bar is visible */
-    .container.with-sticky {
-      padding-top: 6rem;
-    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0a;color:#fff;line-height:1.6;overflow-x:hidden;min-height:100vh}
+    .bg-gradient{position:fixed;top:0;left:0;width:100%;height:100%;background:
+      radial-gradient(circle at 20% 80%, #ff6b6b 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, #4ecdc4 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, #45b7d1 0%, transparent 50%);opacity:.1;z-index:-1}
+    .sticky-email-bar{position:fixed;top:0;left:0;right:0;background:rgba(255,107,107,.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,107,107,.3);box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:1000;transform:translateY(-100%);transition:transform .4s ease-out;animation:slideDownSticky .6s ease-out forwards}
+    .sticky-email-bar.show{transform:translateY(0)}
+    .sticky-content{display:flex;align-items:center;justify-content:center;gap:1rem;padding:1rem;max-width:1000px;margin:0 auto;position:relative}
+    .sticky-text{color:#fff;font-weight:600;font-size:1rem}
+    .btn-sticky{background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.3);padding:.6rem 1.5rem;border-radius:12px;font-weight:700;cursor:pointer;transition:all .3s ease;font-size:.95rem;text-transform:uppercase;letter-spacing:.5px}
+    .btn-sticky:hover{background:rgba(255,255,255,.3);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.2)}
+    .btn-dismiss{background:transparent;color:rgba(255,255,255,.7);border:none;font-size:1.5rem;cursor:pointer;padding:.25rem .5rem;border-radius:6px;transition:all .3s ease;position:absolute;right:1rem}
+    .btn-dismiss:hover{background:rgba(255,255,255,.1);color:#fff}
+    .container{max-width:1000px;margin:0 auto;padding:2rem;position:relative;z-index:1}
+    .header{text-align:center;margin-bottom:3rem;animation:slideDown .8s ease-out}
+    .header h1{font-size:3.5rem;font-weight:900;margin-bottom:1rem;background:linear-gradient(135deg,#ff6b6b,#4ecdc4,#45b7d1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.02em;line-height:1.1}
+    .header .subtitle{font-size:1.2rem;color:#e0e0e0;font-weight:400}
+    .success-card,.loading-card,.plan-card,.error-card{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);border-radius:24px;padding:3rem;border:1px solid rgba(255,255,255,.1);box-shadow:0 25px 50px -12px rgba(0,0,0,.5);text-align:center;margin-bottom:2rem;position:relative;overflow:hidden}
+    .success-card{animation:slideUp .8s ease-out .2s both}
+    .success-card::before,.btn::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);transition:left .8s ease}
+    .success-card:hover::before{left:100%}
+    .success-title{font-size:2.5rem;font-weight:700;color:#4ecdc4;margin-bottom:1rem;text-shadow:0 2px 10px rgba(0,0,0,.3)}
+    .success-icons{display:flex;justify-content:center;gap:2rem;margin:2rem 0}
+    .success-icon{font-size:4rem;filter:drop-shadow(0 4px 8px rgba(0,0,0,.2));animation:bounce 2s infinite}
+    .success-icon:nth-child(2){animation-delay:.2s}.success-icon:nth-child(3){animation-delay:.4s}
+    .success-description{font-size:1.2rem;color:#e0e0e0;margin-bottom:2rem;font-weight:400}
+    .button-group{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+    .btn{padding:1rem 2.5rem;border:none;border-radius:16px;font-size:1.1rem;font-weight:700;cursor:pointer;transition:all .3s ease;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;position:relative;overflow:hidden;text-transform:uppercase;letter-spacing:.5px}
+    .btn::before{transition:left .6s ease}
+    .btn:hover::before{left:100%}
+    .btn-primary{background:linear-gradient(135deg,#ff6b6b,#ff5252);color:#fff;box-shadow:0 10px 30px rgba(255,107,107,.3)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 15px 40px rgba(255,107,107,.4)}
+    .btn-secondary{background:rgba(255,255,255,.1);color:#e0e0e0;border:1px solid rgba(255,255,255,.2)}
+    .btn-secondary:hover{transform:translateY(-2px);background:rgba(255,255,255,.15)}
+    .btn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
+    .loading-title{font-size:1.8rem;font-weight:600;color:#fff;margin-bottom:1rem}
+    .loading-description{font-size:1.1rem;color:#e0e0e0;margin-bottom:2rem}
+    .loading-icons{display:flex;justify-content:center;gap:1rem;margin:2rem 0}
+    .loading-icon{font-size:3rem;animation:pulse 1.5s infinite}
+    .loading-icon:nth-child(2){animation-delay:.3s}.loading-icon:nth-child(3){animation-delay:.6s}
+    .progress-container{width:100%;height:8px;background:rgba(255,107,107,.2);border-radius:4px;overflow:hidden;margin:2rem 0}
+    .progress-bar{height:100%;background:linear-gradient(135deg,#ff6b6b,#ff5252);border-radius:4px;animation:loading 3s ease-in-out infinite}
+    .plan-header{text-align:center;margin-bottom:2.5rem}
+    .plan-title{font-size:2.2rem;font-weight:700;color:#fff;margin-bottom:1rem}
+    .plan-subtitle{font-size:1.1rem;color:#e0e0e0;font-weight:400}
+    #plan{background:rgba(255,255,255,.95);color:#2d3748;border-radius:16px;padding:2.5rem;border:1px solid rgba(255,255,255,.2);font-size:1rem;line-height:1.7;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:break-word;max-width:100%;box-sizing:border-box}
+    #plan h1{color:#2d3748;font-size:2.2rem;font-weight:800;text-align:center;margin:0 0 2rem 0;padding:1.5rem 0;border-bottom:3px solid #ff6b6b;background:linear-gradient(135deg,#ff6b6b,#4ecdc4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    #plan h2{color:#2d3748;font-size:1.4rem;font-weight:700;margin:2.5rem 0 1.5rem 0;padding:1rem 1.5rem;background:linear-gradient(135deg,#f7fafc,#edf2f7);border-radius:12px;border-left:4px solid #ff6b6b;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+    #plan h3{color:#4ecdc4;font-size:1.2rem;font-weight:600;margin:1.5rem 0 1rem 0;padding:.8rem 0;border-bottom:2px solid #e2e8f0}
+    #plan ul,#plan ol{padding-left:0;margin-bottom:2rem;list-style:none}
+    #plan li{margin-bottom:.8rem;padding:1rem 1.5rem;background:rgba(255,255,255,.9);border-radius:12px;border-left:4px solid #4ecdc4;font-size:1rem;transition:all .3s ease;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    #plan li:hover{background:#fff;transform:translateX(8px);box-shadow:0 4px 16px rgba(0,0,0,.12)}
+    #plan p{margin:1.5rem 0;padding:1.5rem;background:rgba(255,255,255,.9);border-radius:12px;border-left:4px solid #ff6b6b;font-size:1rem;line-height:1.6}
+    #plan hr{margin:3rem 0;border:none;height:2px;background:linear-gradient(90deg,transparent,#ff6b6b,transparent)}
+    .guarantee{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);padding:1.5rem;border-radius:12px;margin-top:2rem;text-align:center}
+    .guarantee h4{color:#4caf50;margin-bottom:.5rem}
+    .nutrition-card{background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.3);border-radius:16px;padding:2rem;margin:2rem 0}
+    .nutrition-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin:1rem 0}
+    .nutrition-item{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:1rem;border-radius:12px}
+    .code-like{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:.95rem; white-space:pre-wrap; word-break:break-word; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.1); padding:1rem; border-radius:12px }
+    @keyframes slideDown{from{transform:translateY(-50px);opacity:0}to{transform:translateY(0);opacity:1}}
+    @keyframes slideDownSticky{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+    @keyframes slideUp{from{transform:translateY(50px);opacity:0}to{transform:translateY(0);opacity:1}}
+    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+    @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:.7}}
+    @keyframes loading{0%{width:0%}50%{width:80%}100%{width:100%}}
+    @media (max-width:768px){.container{padding:1rem}.header h1{font-size:2.5rem}.success-card{padding:2rem}.success-title{font-size:2rem}.success-icons{gap:1rem}.success-icon{font-size:3rem}.button-group{flex-direction:column;gap:1rem}.btn{width:100%;justify-content:center}.plan-card{padding:2rem}#plan{padding:1.5rem;font-size:.9rem}#plan h1{font-size:1.8rem}#plan h2{font-size:1.2rem;padding:.8rem 1rem}.sticky-content{flex-direction:column;gap:.5rem;text-align:center;padding:.8rem}.sticky-text{font-size:.9rem}.btn-sticky{font-size:.85rem;padding:.5rem 1.2rem}.btn-dismiss{position:static;margin-top:.5rem}}
+    .celebrate{animation:celebrate .8s ease-out}@keyframes celebrate{0%{transform:scale(.8) rotate(-5deg);opacity:0}50%{transform:scale(1.05) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+    .container.with-sticky{padding-top:6rem}
   </style>
 </head>
 <body>
@@ -618,7 +83,7 @@
   <!-- Sticky Email Bar -->
   <div id="stickyEmailBar" class="sticky-email-bar">
     <div class="sticky-content">
-      <span class="sticky-text">📧 Don't lose your plan! Get it emailed to you.</span>
+      <span class="sticky-text">📧 Don’t lose your plan! Get your workout PDF emailed to you.</span>
       <button id="stickyEmailBtn" class="btn-sticky">Email Me My Plan</button>
       <button id="dismissSticky" class="btn-dismiss">×</button>
     </div>
@@ -627,57 +92,61 @@
   <div class="container" id="mainContainer">
     <div class="header">
       <h1>BroSplit AI</h1>
-      <p class="subtitle">Your personalized workout plan is ready</p>
+      <p class="subtitle" id="subtitle">Your personalized workout plan is ready</p>
     </div>
 
     <div class="success-card celebrate">
       <h2 class="success-title">🎉 Payment Complete!</h2>
-      <div class="success-icons">
-        <span class="success-icon">✅</span>
-        <span class="success-icon">💳</span>
-        <span class="success-icon">🔥</span>
-      </div>
-      <p class="success-description">You're ready to generate your personalized Bro Split plan!</p>
+      <div class="success-icons"><span class="success-icon">✅</span><span class="success-icon">💳</span><span class="success-icon">🔥</span></div>
+      <p class="success-description" id="successDesc">You're ready to generate your personalized plan!</p>
       <div class="button-group">
-        <button id="generatePlan" class="btn btn-primary">
-          🚀 Generate My Plan
-        </button>
-        <a href="index.html" class="btn btn-secondary">
-          ← Back to Start
-        </a>
+        <button id="generatePlan" class="btn btn-primary">🚀 Generate My Plan</button>
+        <a href="index.html" class="btn btn-secondary">← Back to Start</a>
       </div>
     </div>
 
     <div id="planLoading"></div>
     <div id="planError"></div>
 
-    <div id="planContainer" class="plan-card" style="display: none;">
+    <div id="planContainer" class="plan-card" style="display:none;">
       <div class="plan-header">
         <h2 class="plan-title">🏋️‍♂️ Your Custom Workout Plan</h2>
         <p class="plan-subtitle">Tailored specifically for your goals and preferences</p>
       </div>
       <div id="plan"></div>
-      
+
+      <div id="nutritionContainer" class="nutrition-card" style="display:none; text-align:left;">
+        <h2 style="margin-bottom:.5rem;">🥗 Nutrition Plan (Macros + Meals)</h2>
+        <div id="nutritionSummary" class="nutrition-grid"></div>
+        <div id="nutritionGuidelines" style="margin:1rem 0;"></div>
+        <div id="nutritionDays"></div>
+        <h3 style="margin-top:1.25rem;">🛒 Grocery List</h3>
+        <div id="groceryList" class="nutrition-grid"></div>
+        <h3 style="margin-top:1.25rem;">🍱 Batch Prep</h3>
+        <ul id="batchPrep" class="code-like"></ul>
+        <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:1rem;">
+          <button id="downloadNutrition" class="btn btn-secondary">⬇️ Download Nutrition JSON</button>
+          <button id="copyGrocery" class="btn btn-secondary">📋 Copy Grocery List</button>
+        </div>
+      </div>
+
       <div class="guarantee">
         <h4>💯 No-BS Guarantee</h4>
         <p>If you don't see noticeable gains in the first 30 days, we'll refund every penny.</p>
       </div>
     </div>
 
-    <!-- Email button appears only after plan generation -->
-    <div style="text-align: center;">
-      <button id="emailPlan" class="btn btn-primary" style="display: none; margin: 1rem auto;">
-        📧 Email Me My Plan
-      </button>
+    <div style="text-align:center;">
+      <button id="emailPlan" class="btn btn-primary" style="display:none; margin:1rem auto;">📧 Email Me My Plan</button>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-   const API_URL = window.location.origin;
+    const API_URL = window.location.origin;
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get('session_id');
-    
+
     if (!sessionId) {
       document.body.innerHTML = `
         <div class="bg-gradient"></div>
@@ -692,10 +161,16 @@
     }
 
     let formData = {};
-    try { 
-      formData = JSON.parse(localStorage.getItem('brosplitForm') || '{}'); 
-    } catch(e) { 
-      console.error("Parsing form data:", e); 
+    let planType = 'workout';
+    try {
+      formData = JSON.parse(localStorage.getItem('brosplitForm') || '{}');
+      planType = localStorage.getItem('planType') || 'workout';
+    } catch(e) { console.error("Parsing form data:", e); }
+
+    // Update hero text if Pro
+    if (planType === 'pro') {
+      document.getElementById('subtitle').textContent = 'Your personalized training + nutrition plan is ready';
+      document.getElementById('successDesc').textContent = 'Time to generate your workout plan and your macros + meals.';
     }
 
     const generateBtn = document.getElementById('generatePlan');
@@ -709,9 +184,18 @@
     const planLoading = document.getElementById('planLoading');
     const planCard = document.getElementById('planContainer');
 
-    let stickyBarDismissed = false;
+    const nutritionContainer = document.getElementById('nutritionContainer');
+    const nutritionSummary = document.getElementById('nutritionSummary');
+    const nutritionGuidelines = document.getElementById('nutritionGuidelines');
+    const nutritionDays = document.getElementById('nutritionDays');
+    const groceryList = document.getElementById('groceryList');
+    const batchPrep = document.getElementById('batchPrep');
+    const downloadNutrition = document.getElementById('downloadNutrition');
+    const copyGrocery = document.getElementById('copyGrocery');
 
-    // Function to show sticky bar
+    let stickyBarDismissed = false;
+    let nutritionPlan = null;
+
     function showStickyBar() {
       if (!stickyBarDismissed) {
         stickyEmailBar.style.display = 'block';
@@ -719,157 +203,207 @@
         mainContainer.classList.add('with-sticky');
       }
     }
-
-    // Function to hide sticky bar
     function hideStickyBar() {
       stickyEmailBar.classList.remove('show');
       mainContainer.classList.remove('with-sticky');
-      setTimeout(() => {
-        if (!stickyEmailBar.classList.contains('show')) {
-          stickyEmailBar.style.display = 'none';
-        }
-      }, 400);
+      setTimeout(() => { if (!stickyEmailBar.classList.contains('show')) stickyEmailBar.style.display = 'none'; }, 400);
     }
 
-   // Email functionality for both buttons
-  async function sendEmail(button) {
-    const originalText = button.innerHTML;
-    button.disabled = true;
-    button.innerHTML = '⏳ Sending…';
+    async function sendEmail(button) {
+      const originalText = button.innerHTML;
+      button.disabled = true; button.innerHTML = '⏳ Sending…';
 
-    const email = formData.email;
-    const planText = document.getElementById('plan').innerText;
-    if (!email) {
-      alert("⚠️ No email address found. Please go back and re-enter your email.");
-      button.innerHTML = originalText;
-      button.disabled = false;
-      return;
-    }
-
-    try {
-      console.log("Sending payload:", { email, plan: planText });
-      const resp = await fetch(`${API_URL}/api/email-plan`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, plan: planText })
-      });
-      if (!resp.ok) throw new Error("Server rejected the email");
-
-      button.innerHTML = '✅ Sent!';
-      // now that it went out successfully, clear the saved form
-      localStorage.removeItem('brosplitForm');
-
-      if (button === stickyEmailBtn) {
-        stickyBarDismissed = true;
-        hideStickyBar();
+      const email = formData.email;
+      const planText = document.getElementById('plan').innerText;
+      if (!email) {
+        alert("⚠️ No email address found. Please go back and re-enter your email.");
+        button.innerHTML = originalText; button.disabled = false; return;
       }
-
-      setTimeout(() => {
-        button.innerHTML = originalText;
-      }, 3000);
-
-    } catch (err) {
-      console.error(err);
-      button.innerHTML = '❌ Failed';
-      alert("⚠️ " + err.message);
-      setTimeout(() => {
-        button.innerHTML = originalText;
-      }, 3000);
-
-    } finally {
-      button.disabled = false;
+      try {
+        const resp = await fetch(`${API_URL}/api/email-plan`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          // backend currently attaches the workout PDF; we also pass nutrition for future support
+          body: JSON.stringify({ email, plan: planText, nutrition: nutritionPlan })
+        });
+        if (!resp.ok) throw new Error("Server rejected the email");
+        button.innerHTML = '✅ Sent!';
+        localStorage.removeItem('brosplitForm'); localStorage.removeItem('planType');
+        if (button === stickyEmailBtn) { stickyBarDismissed = true; hideStickyBar(); }
+        setTimeout(() => { button.innerHTML = originalText; }, 3000);
+      } catch (err) {
+        console.error(err);
+        button.innerHTML = '❌ Failed'; alert("⚠️ " + (err.message || 'Email failed'));
+        setTimeout(() => { button.innerHTML = originalText; }, 3000);
+      } finally { button.disabled = false; }
     }
-  }
 
-  // Wire up both email buttons
-  emailBtn.addEventListener('click', () => sendEmail(emailBtn));
-  stickyEmailBtn.addEventListener('click', () => sendEmail(stickyEmailBtn));
+    emailBtn.addEventListener('click', () => sendEmail(emailBtn));
+    stickyEmailBtn.addEventListener('click', () => sendEmail(stickyEmailBtn));
+    dismissStickyBtn.addEventListener('click', () => { stickyBarDismissed = true; hideStickyBar(); });
 
-  // Dismiss sticky bar
-  dismissStickyBtn.addEventListener('click', () => {
-    stickyBarDismissed = true;
-    hideStickyBar();
-  });
-
-  // Plan generation handler
-  generateBtn.addEventListener('click', async () => {
-    // Reset UI
-    planDiv.innerHTML = "";
-    planError.innerHTML = "";
-    planCard.style.display = "none";
-    emailBtn.style.display = "none";
-    generateBtn.disabled = true;
-    stickyBarDismissed = false;
-    hideStickyBar();
-
-    planLoading.innerHTML = `
-      <div class="loading-card">
-        <div class="loading-icons">
-          <span class="loading-icon">🤖</span>
-          <span class="loading-icon">💭</span>
-          <span class="loading-icon">🏋️</span>
+    function renderNutrition(n) {
+      if (!n) return;
+      // Summary
+      nutritionSummary.innerHTML = `
+        <div class="nutrition-item"><strong>Calories</strong><br>${n.summary.calories} kcal</div>
+        <div class="nutrition-item"><strong>Protein</strong><br>${n.summary.protein_g} g/day (~${n.summary.per_meal_protein_g} g/meal)</div>
+        <div class="nutrition-item"><strong>Carbs</strong><br>${n.summary.carbs_g} g/day</div>
+        <div class="nutrition-item"><strong>Fat</strong><br>${n.summary.fat_g} g/day</div>
+        <div class="nutrition-item"><strong>Fiber</strong><br>${n.summary.fiber_target_g} g/day</div>
+        <div class="nutrition-item"><strong>Sodium cap</strong><br>${n.summary.sodium_cap_mg} mg/day</div>
+        <div class="nutrition-item"><strong>Meals/day</strong><br>${n.summary.meals_per_day}</div>
+      `;
+      // Guidelines
+      nutritionGuidelines.innerHTML = `
+        <div class="code-like">
+          • Protein per meal: ${n.guidelines.protein_per_meal_rule}<br>
+          • Pre/Post training: ${n.guidelines.pre_post}<br>
+          • Notes: ${n.guidelines.notes}
         </div>
-        <h3 class="loading-title">Generating your personalized plan...</h3>
-        <p class="loading-description">Our AI is analyzing your preferences and creating the perfect workout split for you!</p>
-        <div class="progress-container"><div class="progress-bar"></div></div>
-      </div>`;
+      `;
+      // Day plans (render first 7 days)
+      nutritionDays.innerHTML = n.day_plans.slice(0,7).map(d => {
+        const meals = (d.meals || []).map(m => {
+          const ing = (m.ingredients || []).map(i => `${i.item} — ${Object.values(i)[1]}${i.grams?'g':''}${i.ml?' ml':''}${i.count?' ct':''}`).join('; ');
+          const mac = m.macros ? ` (${m.macros.kcal||0} kcal • P${m.macros.protein_g||0}/C${m.macros.carbs_g||0}/F${m.macros.fat_g||0})` : '';
+          return `<li><strong>${m.name}:</strong> ${m.recipe}${mac}<br><span style="opacity:.85">${ing}</span></li>`;
+        }).join('');
+        return `
+          <div style="margin:1rem 0;">
+            <h3 style="margin:.25rem 0;">Day ${d.day} — ${d.total_kcal||n.summary.calories} kcal</h3>
+            <ul class="code-like" style="list-style:none;margin:.5rem 0;">${meals}</ul>
+          </div>
+        `;
+      }).join('');
 
-    try {
-      const res = await fetch(`${API_URL}/api/generate-plan`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, ...formData })
-      });
-      if (!res.ok) throw new Error("Could not generate plan");
-      const { plan } = await res.json();
+      // Grocery list
+      groceryList.innerHTML = (n.grocery_list?.items || []).map(it => {
+        const unit = it.kg ? `${it.kg} kg` : it.ml ? `${it.ml} ml` : it.count ? `${it.count} ct` : '';
+        return `<div class="nutrition-item">${it.item}${unit ? ` — <span style="opacity:.85">${unit}</span>` : ''}</div>`;
+      }).join('');
+
+      // Batch prep
+      batchPrep.innerHTML = (n.batch_prep || []).map(b => `<li><strong>${b.day}:</strong> ${b.steps.join(' • ')}</li>`).join('');
+
+      nutritionContainer.style.display = 'block';
+    }
+
+    function blobDownload(filename, content) {
+      const blob = new Blob([content], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    downloadNutrition.addEventListener('click', () => {
+      if (!nutritionPlan) return alert('Nutrition plan not generated yet.');
+      blobDownload('nutrition-plan.json', JSON.stringify(nutritionPlan, null, 2));
+    });
+
+    copyGrocery.addEventListener('click', async () => {
+      const items = (nutritionPlan?.grocery_list?.items || []).map(i => `• ${i.item}${i.kg?` — ${i.kg} kg`:i.ml?` — ${i.ml} ml`:i.count?` — ${i.count} ct`:''}`).join('\n');
+      if (!items) return alert('No grocery list available.');
+      await navigator.clipboard.writeText(items);
+      copyGrocery.textContent = '✅ Copied!';
+      setTimeout(()=> copyGrocery.textContent = '📋 Copy Grocery List', 1200);
+    });
+
+    // Generate flow
+    document.getElementById('generatePlan').addEventListener('click', async () => {
+      // Reset UI
+      planDiv.innerHTML = ""; planError.innerHTML = ""; planCard.style.display = "none";
+      emailBtn.style.display = "none"; nutritionContainer.style.display = "none";
+      nutritionPlan = null; stickyBarDismissed = false; hideStickyBar();
+      generateBtn.disabled = true;
 
       planLoading.innerHTML = `
-        <div class="loading-card" style="background: rgba(76, 205, 196, 0.1); border-color: rgba(76, 205, 196, 0.3);">
-          <h3 class="loading-title" style="color: #4ecdc4;">✅ Plan Generated Successfully!</h3>
-          <p class="loading-description" style="color: #4ecdc4;">Your personalized workout plan is ready!</p>
+        <div class="loading-card">
+          <div class="loading-icons"><span class="loading-icon">🤖</span><span class="loading-icon">💭</span><span class="loading-icon">🏋️</span></div>
+          <h3 class="loading-title">Generating your workout plan…</h3>
+          <p class="loading-description">Analyzing your inputs and building the perfect split.</p>
+          <div class="progress-container"><div class="progress-bar"></div></div>
         </div>`;
 
-      planDiv.innerHTML = marked.parse(plan);
-      planCard.style.display = "block";
-      emailBtn.style.display = "block";
-      planCard.scrollIntoView({ behavior: 'smooth' });
+      try {
+        // 1) Workout plan
+        const res = await fetch(`${API_URL}/api/generate-plan`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, ...formData })
+        });
+        if (!res.ok) throw new Error("Could not generate workout plan.");
+        const { plan } = await res.json();
 
-      // Show sticky bar after a short delay
-      setTimeout(() => {
-  if (planCard.style.display === "block") {
-    showStickyBar();
-  }
-}, 2000);
+        planDiv.innerHTML = marked.parse(plan);
+        planCard.style.display = "block";
+        emailBtn.style.display = "block";
+        planCard.scrollIntoView({ behavior: 'smooth' });
 
+        // 2) Nutrition plan for Pro
+        if (planType === 'pro') {
+          planLoading.innerHTML = `
+            <div class="loading-card" style="background: rgba(78,205,196,0.1); border-color: rgba(78,205,196,0.3);">
+              <h3 class="loading-title" style="color:#4ecdc4;">🥗 Generating your nutrition plan…</h3>
+              <p class="loading-description" style="color:#4ecdc4;">Macros, meals, grocery list, and batch prep.</p>
+              <div class="progress-container"><div class="progress-bar"></div></div>
+            </div>`;
+          // Build payload required by /api/nutrition
+          const payload = {
+            sex: formData.sex,
+            age: Number(formData.age),
+            height_cm: formData.height_cm,
+            weight_kg: formData.weight_kg,
+            activity: formData.activity || 'moderate',
+            goal: formData.nutrition_goal || 'recomp',
+            training_load: formData.training_load || 'moderate',
+            meals_per_day: formData.meals_per_day || 4,
+            cuisine_prefs: formData.cuisine_prefs || [],
+            diet_prefs: formData.diet_prefs || ['none'],
+            allergies: formData.allergies || [],
+            budget_level: formData.budget_level || 'normal',
+            email: formData.email
+          };
+          const nres = await fetch(`${API_URL}/api/nutrition`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!nres.ok) throw new Error("Could not generate nutrition plan.");
+          const ndata = await nres.json();
+          nutritionPlan = ndata.plan;
+          renderNutrition(nutritionPlan);
+        }
 
-    } catch (err) {
-      planError.innerHTML = `
-        <div class="error-card">
-          <h3 class="error-title">⚠️ Generation Failed</h3>
-          <p class="error-description">${err.message || "Could not generate plan."}</p>
-          <button onclick="location.reload()" class="btn btn-primary" style="margin-top:1rem">🔄 Try Again</button>
-        </div>`;
-    } finally {
-      planLoading.innerHTML = "";
-      generateBtn.disabled = false;
-    }
-  });
+        // Success banner
+        planLoading.innerHTML = `
+          <div class="loading-card" style="background: rgba(76,205,196,0.1); border-color: rgba(76,205,196,0.3);">
+            <h3 class="loading-title" style="color:#4ecdc4;">✅ Plan Generated Successfully!</h3>
+            <p class="loading-description" style="color:#4ecdc4;">You're all set.</p>
+          </div>`;
 
-  // Clean up celebration animation
-  setTimeout(() => {
-    document.querySelectorAll('.celebrate').forEach(el => el.classList.remove('celebrate'));
-  }, 800);
+        setTimeout(() => { if (planCard.style.display === "block") showStickyBar(); }, 2000);
 
-  // Scroll-trigger animations
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.style.animation = 'slideUp 0.6s ease-out forwards';
+      } catch (err) {
+        planError.innerHTML = `
+          <div class="error-card">
+            <h3 class="error-title">⚠️ Generation Failed</h3>
+            <p class="error-description">${err.message || "Could not generate plan."}</p>
+            <button onclick="location.reload()" class="btn btn-primary" style="margin-top:1rem">🔄 Try Again</button>
+          </div>`;
+      } finally {
+        planLoading.innerHTML = "";
+        generateBtn.disabled = false;
       }
     });
-  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-  document.querySelectorAll('.plan-card, .loading-card, .error-card').forEach(el => {
-    observer.observe(el);
-  });
-</script>
+    // Clean up celebration animation
+    setTimeout(() => { document.querySelectorAll('.celebrate').forEach(el => el.classList.remove('celebrate')); }, 800);
+
+    // Scroll-trigger animations
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.style.animation = 'slideUp .6s ease-out forwards'; });
+    }, { threshold: .1, rootMargin: '0px 0px -50px 0px' });
+    document.querySelectorAll('.plan-card, .loading-card, .error-card').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
