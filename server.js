@@ -42,8 +42,8 @@ app.post("/api/checkout", async (req, res) => {
   try {
     // Step 1: Determine which Price ID to use
     const price = req.body.planType === 'pro'
-      ? 'price_1RwCtIAhLaqVN2RsgNnz8QSH'   // $15 Pro version
-      : 'price_1RrLHFAhLaqVN2RsuypXJYSA'; // $5 regular workout-only version
+      ? 'price_1RsQJUAhLaqVN2Rssepup9EE'   // $15 Pro version
+      : 'price_1RsQJUAhLaqVN2Rssepup9EE'; // $5 regular workout-only version
 
     // Step 2: Create the Checkout Session with the correct price
     const session = await stripe.checkout.sessions.create({
