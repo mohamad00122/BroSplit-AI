@@ -65,7 +65,7 @@
     .nutrition-card{background:rgba(78,205,196,.08);border:1px solid rgba(78,205,196,.3);border-radius:16px;padding:2rem;margin:2rem 0}
     .nutrition-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin:1rem 0}
     .nutrition-item{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:1rem;border-radius:12px}
-    .code-like{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:.95rem; white-space:pre-wrap; word-break:break-word; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.1); padding:1rem; border-radius:12px}
+    .code-like{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:.95rem; white-space:pre-wrap; word-break:break-word; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.1); padding:1rem; border-radius:12px }
     @keyframes slideDown{from{transform:translateY(-50px);opacity:0}to{transform:translateY(0);opacity:1}}
     @keyframes slideDownSticky{from{transform:translateY(-100%)}to{transform:translateY(0)}}
     @keyframes slideUp{from{transform:translateY(50px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -83,7 +83,7 @@
   <!-- Sticky Email Bar -->
   <div id="stickyEmailBar" class="sticky-email-bar">
     <div class="sticky-content">
-      <span class="sticky-text" id="stickyCopy">📧 Don’t lose your plan! Get your PDF emailed to you.</span>
+      <span class="sticky-text">📧 Don’t lose your plan! Get your workout PDF emailed to you.</span>
       <button id="stickyEmailBtn" class="btn-sticky">Email Me My Plan</button>
       <button id="dismissSticky" class="btn-dismiss">×</button>
     </div>
@@ -124,6 +124,10 @@
         <div id="groceryList" class="nutrition-grid"></div>
         <h3 style="margin-top:1.25rem;">🍱 Batch Prep</h3>
         <ul id="batchPrep" class="code-like"></ul>
+        <div style="display:flex; gap:.75rem; flex-wrap:wrap; margin-top:1rem;">
+          <button id="downloadNutrition" class="btn btn-secondary">⬇️ Download Nutrition JSON</button>
+          <button id="copyGrocery" class="btn btn-secondary">📋 Copy Grocery List</button>
+        </div>
       </div>
 
       <div class="guarantee">
@@ -163,11 +167,10 @@
       planType = localStorage.getItem('planType') || 'workout';
     } catch(e) { console.error("Parsing form data:", e); }
 
-    // Dynamic copy for Pro
+    // Update hero text if Pro
     if (planType === 'pro') {
       document.getElementById('subtitle').textContent = 'Your personalized training + nutrition plan is ready';
       document.getElementById('successDesc').textContent = 'Time to generate your workout plan and your macros + meals.';
-      document.getElementById('stickyCopy').textContent = '📧 Don’t lose your plan! Get your training + nutrition PDF emailed to you.';
     }
 
     const generateBtn = document.getElementById('generatePlan');
@@ -187,6 +190,8 @@
     const nutritionDays = document.getElementById('nutritionDays');
     const groceryList = document.getElementById('groceryList');
     const batchPrep = document.getElementById('batchPrep');
+    const downloadNutrition = document.getElementById('downloadNutrition');
+    const copyGrocery = document.getElementById('copyGrocery');
 
     let stickyBarDismissed = false;
     let nutritionPlan = null;
@@ -218,6 +223,7 @@
         const resp = await fetch(`${API_URL}/api/email-plan`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          // backend currently attaches the workout PDF; we also pass nutrition for future support
           body: JSON.stringify({ email, plan: planText, nutrition: nutritionPlan })
         });
         if (!resp.ok) throw new Error("Server rejected the email");
@@ -256,13 +262,10 @@
           • Notes: ${n.guidelines.notes}
         </div>
       `;
-      // Day plans (first 7 days)
+      // Day plans (render first 7 days)
       nutritionDays.innerHTML = n.day_plans.slice(0,7).map(d => {
         const meals = (d.meals || []).map(m => {
-          const ing = (m.ingredients || []).map(i => {
-            const qty = i.grams ? `${i.grams} g` : i.ml ? `${i.ml} ml` : i.count ? `${i.count} ct` : '';
-            return `${i.item}${qty ? ` — ${qty}` : ''}`;
-          }).join('; ');
+          const ing = (m.ingredients || []).map(i => `${i.item} — ${Object.values(i)[1]}${i.grams?'g':''}${i.ml?' ml':''}${i.count?' ct':''}`).join('; ');
           const mac = m.macros ? ` (${m.macros.kcal||0} kcal • P${m.macros.protein_g||0}/C${m.macros.carbs_g||0}/F${m.macros.fat_g||0})` : '';
           return `<li><strong>${m.name}:</strong> ${m.recipe}${mac}<br><span style="opacity:.85">${ing}</span></li>`;
         }).join('');
@@ -276,8 +279,8 @@
 
       // Grocery list
       groceryList.innerHTML = (n.grocery_list?.items || []).map(it => {
-        const qty = it.kg ? `${it.kg} kg` : it.ml ? `${it.ml} ml` : it.count ? `${it.count} ct` : '';
-        return `<div class="nutrition-item">${it.item}${qty ? ` — <span style="opacity:.85">${qty}</span>` : ''}</div>`;
+        const unit = it.kg ? `${it.kg} kg` : it.ml ? `${it.ml} ml` : it.count ? `${it.count} ct` : '';
+        return `<div class="nutrition-item">${it.item}${unit ? ` — <span style="opacity:.85">${unit}</span>` : ''}</div>`;
       }).join('');
 
       // Batch prep
@@ -286,9 +289,31 @@
       nutritionContainer.style.display = 'block';
     }
 
+    function blobDownload(filename, content) {
+      const blob = new Blob([content], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    downloadNutrition.addEventListener('click', () => {
+      if (!nutritionPlan) return alert('Nutrition plan not generated yet.');
+      blobDownload('nutrition-plan.json', JSON.stringify(nutritionPlan, null, 2));
+    });
+
+    copyGrocery.addEventListener('click', async () => {
+      const items = (nutritionPlan?.grocery_list?.items || []).map(i => `• ${i.item}${i.kg?` — ${i.kg} kg`:i.ml?` — ${i.ml} ml`:i.count?` — ${i.count} ct`:''}`).join('\n');
+      if (!items) return alert('No grocery list available.');
+      await navigator.clipboard.writeText(items);
+      copyGrocery.textContent = '✅ Copied!';
+      setTimeout(()=> copyGrocery.textContent = '📋 Copy Grocery List', 1200);
+    });
+
     // Generate flow
     document.getElementById('generatePlan').addEventListener('click', async () => {
-      planDiv.innerHTML = ""; planError.innerHTML = ""; document.getElementById('planContainer').style.display = "none";
+      // Reset UI
+      planDiv.innerHTML = ""; planError.innerHTML = ""; planCard.style.display = "none";
       emailBtn.style.display = "none"; nutritionContainer.style.display = "none";
       nutritionPlan = null; stickyBarDismissed = false; hideStickyBar();
       generateBtn.disabled = true;
@@ -302,7 +327,7 @@
         </div>`;
 
       try {
-        // Workout plan
+        // 1) Workout plan
         const res = await fetch(`${API_URL}/api/generate-plan`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sessionId, ...formData })
@@ -311,11 +336,11 @@
         const { plan } = await res.json();
 
         planDiv.innerHTML = marked.parse(plan);
-        document.getElementById('planContainer').style.display = "block";
+        planCard.style.display = "block";
         emailBtn.style.display = "block";
-        document.getElementById('planContainer').scrollIntoView({ behavior: 'smooth' });
+        planCard.scrollIntoView({ behavior: 'smooth' });
 
-        // Nutrition plan for Pro
+        // 2) Nutrition plan for Pro
         if (planType === 'pro') {
           planLoading.innerHTML = `
             <div class="loading-card" style="background: rgba(78,205,196,0.1); border-color: rgba(78,205,196,0.3);">
@@ -323,6 +348,7 @@
               <p class="loading-description" style="color:#4ecdc4;">Macros, meals, grocery list, and batch prep.</p>
               <div class="progress-container"><div class="progress-bar"></div></div>
             </div>`;
+          // Build payload required by /api/nutrition
           const payload = {
             sex: formData.sex,
             age: Number(formData.age),
@@ -354,7 +380,8 @@
             <h3 class="loading-title" style="color:#4ecdc4;">✅ Plan Generated Successfully!</h3>
             <p class="loading-description" style="color:#4ecdc4;">You're all set.</p>
           </div>`;
-        setTimeout(() => { if (document.getElementById('planContainer').style.display === "block") showStickyBar(); }, 2000);
+
+        setTimeout(() => { if (planCard.style.display === "block") showStickyBar(); }, 2000);
 
       } catch (err) {
         planError.innerHTML = `
@@ -372,15 +399,11 @@
     // Clean up celebration animation
     setTimeout(() => { document.querySelectorAll('.celebrate').forEach(el => el.classList.remove('celebrate')); }, 800);
 
-    // Simple reveal animations
+    // Scroll-trigger animations
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => { if (entry.isIntersecting) entry.target.style.animation = 'slideUp .6s ease-out forwards'; });
     }, { threshold: .1, rootMargin: '0px 0px -50px 0px' });
     document.querySelectorAll('.plan-card, .loading-card, .error-card').forEach(el => observer.observe(el));
-
-    // Wire email buttons
-    document.getElementById('emailPlan').addEventListener('click', () => sendEmail(document.getElementById('emailPlan')));
-    document.getElementById('stickyEmailBtn').addEventListener('click', () => sendEmail(document.getElementById('stickyEmailBtn')));
   </script>
 </body>
 </html>

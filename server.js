@@ -6,7 +6,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import PDFDocument from "pdfkit";
-import nodemailer from "nodemailer"; // (unused; safe to remove if you want)
+import nodemailer from "nodemailer";
 import fs from "fs";
 import Stripe from "stripe";
 import OpenAI from "openai";
@@ -38,22 +38,20 @@ app.use(rateLimit({ windowMs: 60_000, limit: 120 }));
 // ─── 1. Stripe Checkout Endpoint ───────────────────────────────────────────────
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
-// OPTIONAL: move these to .env for safety
-// STRIPE_PRICE_BASE=price_1RrLHFAhLaqVN2RsuypXJYSA   # $5
-// STRIPE_PRICE_PRO=price_1RwCtIAhLaqVN2RsgNnz8QSH     # $15
-const PRICE_BASE = process.env.STRIPE_PRICE_BASE || 'price_1RsQJUAhLaqVN2Rssepup9EE';
-const PRICE_PRO  = process.env.STRIPE_PRICE_PRO  || 'price_1RsQJUAhLaqVN2Rssepup9EE';
-
 app.post("/api/checkout", async (req, res) => {
   try {
-    // Decide which tier we’re selling
-    const price = req.body.planType === 'pro' ? PRICE_PRO : PRICE_BASE;
+    // Step 1: Determine which Price ID to use
+    const price = req.body.planType === 'pro'
+      ? 'price_1RwCtIAhLaqVN2RsgNnz8QSH'   // $15 Pro version
+      : 'price_1RrLHFAhLaqVN2RsuypXJYSA'; // $5 regular workout-only version
 
+    // Step 2: Create the Checkout Session with the correct price
     const session = await stripe.checkout.sessions.create({
-      line_items: [{ price, quantity: 1 }],
+      line_items: [{
+        price,
+        quantity: 1
+      }],
       mode: "payment",
-      // (optional) allow promo codes / coupons in Checkout:
-      // allow_promotion_codes: true,
       success_url: `${process.env.FRONTEND_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL}/`
     });
@@ -65,10 +63,11 @@ app.post("/api/checkout", async (req, res) => {
   }
 });
 
+
 // ─── 2. Plan Generation Endpoint (workout) ─────────────────────────────────────
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Tight rate limit for generation endpoints
+// Tight rate limit for generation
 const genLimiter = rateLimit({ windowMs: 60_000, limit: 12 });
 
 app.post("/api/generate-plan", genLimiter, async (req, res) => {
@@ -78,7 +77,7 @@ app.post("/api/generate-plan", genLimiter, async (req, res) => {
       goal, dislikes, focusMuscle, age, sex, bodyweight, lifts
     } = req.body;
 
-    // Optional: verify payment (comment out if testing locally)
+    // Optional: require payment; comment out if testing locally
     if (sessionId) {
       const session = await stripe.checkout.sessions.retrieve(sessionId);
       if (session.payment_status !== "paid") {
@@ -113,7 +112,7 @@ const NutritionInput = z.object({
   weight_kg: z.number().min(35).max(250),
   activity: z.enum(["sedentary","light","moderate","very_active"]),
   goal: z.enum(["cut","recomp","gain"]),
-  training_load: z.enum(["light","moderate","high"]),
+  training_load: z.enum(["light","moderate","high"]), // drives carb g/kg
   meals_per_day: z.number().int().min(3).max(6).default(4),
   cuisine_prefs: z.array(z.string()).default([]),
   diet_prefs: z.array(z.enum([
@@ -121,6 +120,7 @@ const NutritionInput = z.object({
   ])).default(["none"]),
   allergies: z.array(z.string()).default([]),
   budget_level: z.enum(["tight","normal","flex"]).default("normal"),
+  // optional: to label/attach in email/PDF
   name: z.string().optional(),
   email: z.string().email().optional()
 });
@@ -128,34 +128,41 @@ const NutritionInput = z.object({
 const AF = { sedentary:1.2, light:1.375, moderate:1.55, very_active:1.725 };
 
 function mifflin({ sex, age, height_cm, weight_kg }) {
+  // Mifflin–St Jeor (RMR)
   return 10*weight_kg + 6.25*height_cm - 5*age + (sex === "male" ? 5 : -161);
 }
 
 function calorieGoal(rmr, activity, goal) {
   const tdee = rmr * AF[activity];
-  const adj = goal === "cut" ? 0.80 : goal === "gain" ? 1.12 : 0.95;
+  const adj = goal === "cut" ? 0.80 : goal === "gain" ? 1.12 : 0.95; // mild recomp
   return Math.round(tdee * adj);
 }
 
 function macroTargets({ weight_kg, kcal, goal, training_load }) {
+  // Protein (g/kg): cut -> 2.2, otherwise ~1.8 (within 1.6–2.2)
   const proteinPerKg = goal === "cut" ? 2.2 : 1.8;
   const protein_g = Math.round(proteinPerKg * weight_kg);
 
+  // Fat as % kcal (AMDR 20–35%). Start ~30%; adjust if carbs need room.
   let fat_g = Math.round((kcal * 0.30) / 9);
 
+  // Carb bands by load
   const band = training_load === "high" ? [8,10]
              : training_load === "moderate" ? [5,7]
              : [3,5];
   const minCarb_g = Math.round(band[0] * weight_kg);
 
+  // Fill carbs with remainder after protein+fat
   let carbs_g = Math.round((kcal - (protein_g*4 + fat_g*9)) / 4);
   if (carbs_g < minCarb_g) {
+    // reduce fat toward 22% to free kcal for carbs
     fat_g = Math.round((kcal * 0.22) / 9);
     carbs_g = Math.round((kcal - (protein_g*4 + fat_g*9)) / 4);
   }
+  // Guard rails
   if (carbs_g < 0) carbs_g = Math.max(0, minCarb_g);
 
-  const fiber_g = Math.round((kcal / 1000) * 14);
+  const fiber_g = Math.round((kcal / 1000) * 14); // DGA guidance
   const sodium_mg_cap = 2300;
 
   return { kcal, protein_g, carbs_g, fat_g, fiber_g, sodium_mg_cap };
@@ -175,6 +182,7 @@ app.post("/api/nutrition", genLimiter, async (req, res) => {
       training_load: input.training_load
     });
 
+    // Build a strict JSON prompt; we will parse it below.
     const prompt = makeNutritionPrompt({ input, targets });
 
     const completion = await openai.chat.completions.create({
@@ -212,15 +220,15 @@ app.post("/api/nutrition", genLimiter, async (req, res) => {
   }
 });
 
-// ─── 4. Enhanced PDF Generation (Training + optional Nutrition) ────────────────
-function generateEnhancedPDF(planText, userProfile = {}, nutritionPlan = null) {
+// ─── 4. Improved PDF Generation Function (workout; unchanged) ──────────────────
+function generateEnhancedPDF(planText, userProfile = {}) {
   const doc = new PDFDocument({
     size: "A4",
     margins: { top: 50, bottom: 50, left: 50, right: 50 }
   });
   const { width, height } = doc.page;
-  const hasNutrition = !!nutritionPlan;
 
+  // Typography styles
   const styles = {
     heading1: { font: 'Helvetica-Bold', size: 24, color: '#2563eb' },
     heading2: { font: 'Helvetica-Bold', size: 18, color: '#1f2937' },
@@ -228,7 +236,9 @@ function generateEnhancedPDF(planText, userProfile = {}, nutritionPlan = null) {
     small:    { font: 'Helvetica',      size: 9,  color: '#6b7280' }
   };
 
-  function applyStyle(style) { doc.font(style.font).fontSize(style.size).fillColor(style.color); }
+  function applyStyle(style) {
+    doc.font(style.font).fontSize(style.size).fillColor(style.color);
+  }
   function rule() {
     doc.moveDown(0.5);
     doc.strokeColor('#e5e7eb').lineWidth(0.5)
@@ -240,7 +250,7 @@ function generateEnhancedPDF(planText, userProfile = {}, nutritionPlan = null) {
 
   // Cover
   applyStyle(styles.heading1);
-  doc.text(`Your Personal 6-Week ${hasNutrition ? 'Training + Nutrition' : 'BroSplit'} Journey`, { align: 'center' });
+  doc.text('Your Personal 6-Week BroSplit Journey', { align: 'center' });
   doc.moveDown(1);
   applyStyle(styles.body);
   const name = userProfile.name || 'Champion';
@@ -260,22 +270,16 @@ function generateEnhancedPDF(planText, userProfile = {}, nutritionPlan = null) {
   }
   doc.addPage();
 
-  // TOC (dynamic)
+  // TOC
   applyStyle(styles.heading2);
   doc.text('Table of Contents', { align: 'left' });
   doc.moveDown(0.5);
   applyStyle(styles.body);
-
-  const toc = [
+  [
     'Cover Page', 'Introduction', 'Pro Tips',
     'Week 1', 'Week 2', 'Week 3',
-    'Week 4', 'Week 5', 'Week 6'
-  ];
-  if (hasNutrition) {
-    toc.push('Nutrition Summary', '7-Day Meal Plan', 'Grocery List', 'Batch Prep');
-  }
-  toc.push('Footer');
-  toc.forEach((item, i) => doc.text(`${i+1}. ${item}`));
+    'Week 4', 'Week 5', 'Week 6', 'Footer'
+  ].forEach((item, i) => doc.text(`${i+1}. ${item}`));
   doc.addPage();
 
   // Pro Tips
@@ -285,18 +289,17 @@ function generateEnhancedPDF(planText, userProfile = {}, nutritionPlan = null) {
   applyStyle(styles.body);
   [
     'Progressive Overload: Aim to add a little more each week.',
-    'Recovery Matters: 7–9 hours of sleep for muscle growth.',
-    'Nutrition: ~0.7–1.0 g protein per lb bodyweight.',
+    'Recovery Matters: 7-9 hours of sleep for muscle growth.',
+    'Nutrition: 0.8-1g protein per lb bodyweight.',
     'Track Progress: Log workouts and celebrate wins.',
-    'Form Over Ego: Quality reps beat sloppy heavy reps.'
+    'Form Over Ego: Quality reps beat heavy sloppy reps.'
   ].forEach(tip => doc.text(`• ${tip}`, { indent: 20 }));
   doc.addPage();
 
-  // Parse and render weeks (Training)
-  const lines = (planText || '').replace(/\*\*/g, '').split(/\r?\n/).map(l => l.trim());
+  // Parse and render weeks
+  const lines = planText.replace(/\*\*/g, '').split(/\r?\n/).map(l => l.trim());
   const weeks = [];
   let currentWeek = null, currentDay = null;
-
   lines.forEach(line => {
     if (!line) return;
     const w = line.match(/^Week\s+(\d+)/i);
@@ -326,81 +329,6 @@ function generateEnhancedPDF(planText, userProfile = {}, nutritionPlan = null) {
     doc.addPage();
   });
 
-  // Nutrition (if provided)
-  if (hasNutrition) {
-    const n = nutritionPlan;
-
-    // Nutrition Summary
-    applyStyle(styles.heading2);
-    doc.text('Nutrition Summary');
-    rule();
-    applyStyle(styles.body);
-    const rows = [
-      ['Calories', `${n?.summary?.calories ?? '-'} kcal`],
-      ['Protein', `${n?.summary?.protein_g ?? '-'} g/day (~${n?.summary?.per_meal_protein_g ?? '-'} g/meal)`],
-      ['Carbs', `${n?.summary?.carbs_g ?? '-'} g/day`],
-      ['Fat', `${n?.summary?.fat_g ?? '-'} g/day`],
-      ['Fiber', `${n?.summary?.fiber_target_g ?? '-'} g/day`],
-      ['Sodium cap', `${n?.summary?.sodium_cap_mg ?? '-'} mg/day`],
-      ['Meals/day', `${n?.summary?.meals_per_day ?? '-'}`]
-    ];
-    rows.forEach(([k, v]) => doc.text(`• ${k}: ${v}`, { indent: 20 }));
-    if (n?.guidelines) {
-      doc.moveDown(0.5);
-      if (n.guidelines.protein_per_meal_rule) doc.text(`• ${n.guidelines.protein_per_meal_rule}`, { indent: 20 });
-      if (n.guidelines.pre_post) doc.text(`• ${n.guidelines.pre_post}`, { indent: 20 });
-      if (n.guidelines.notes) doc.text(`• ${n.guidelines.notes}`, { indent: 20 });
-    }
-    doc.addPage();
-
-    // 7-Day Meal Plan
-    applyStyle(styles.heading2);
-    doc.text('7-Day Meal Plan');
-    rule();
-    applyStyle(styles.body);
-    (n?.day_plans || []).slice(0, 7).forEach(day => {
-      applyStyle(styles.heading1);
-      doc.text(`Day ${day.day} — ${day.total_kcal || n?.summary?.calories || ''} kcal`);
-      applyStyle(styles.body);
-      (day.meals || []).forEach(m => {
-        const macros = m.macros ? ` (${m.macros.kcal || 0} kcal • P${m.macros.protein_g || 0}/C${m.macros.carbs_g || 0}/F${m.macros.fat_g || 0})` : '';
-        doc.text(`• ${m.name}: ${m.recipe}${macros}`, { indent: 20 });
-        (m.ingredients || []).forEach(i => {
-          const qty = i.grams ? `${i.grams} g` : i.ml ? `${i.ml} ml` : i.count ? `${i.count} ct` : '';
-          doc.text(`   – ${i.item}${qty ? ` — ${qty}` : ''}`);
-        });
-        doc.moveDown(0.25);
-      });
-      doc.moveDown(0.5);
-    });
-    doc.addPage();
-
-    // Grocery List
-    applyStyle(styles.heading2);
-    doc.text('Grocery List');
-    rule();
-    applyStyle(styles.body);
-    (n?.grocery_list?.items || []).forEach(it => {
-      const qty = it.kg ? `${it.kg} kg` : it.ml ? `${it.ml} ml` : it.count ? `${it.count} ct` : '';
-      doc.text(`• ${it.item}${qty ? ` — ${qty}` : ''}`, { indent: 20 });
-    });
-    doc.addPage();
-
-    // Batch Prep
-    applyStyle(styles.heading2);
-    doc.text('Batch Prep');
-    rule();
-    applyStyle(styles.body);
-    (n?.batch_prep || []).forEach(b => {
-      applyStyle(styles.heading1);
-      doc.text(b.day);
-      applyStyle(styles.body);
-      (b.steps || []).forEach(step => doc.text(`• ${step}`, { indent: 20 }));
-      doc.moveDown(0.5);
-    });
-    doc.addPage();
-  }
-
   // Footer
   applyStyle(styles.heading2);
   doc.text('Ready to Get Started?');
@@ -424,12 +352,12 @@ function generateEnhancedPDF(planText, userProfile = {}, nutritionPlan = null) {
   return doc;
 }
 
-// ─── 5. Email Endpoint using Resend (now accepts nutrition) ────────────────────
+// ─── 5. Email Endpoint using Resend ────────────────────────────────────────────
 import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-async function sendWorkoutPlanWithResend(email, plan, userProfile = {}, nutrition = null) {
-  const doc = generateEnhancedPDF(plan, userProfile, nutrition);
+async function sendWorkoutPlanWithResend(email, plan, userProfile = {}) {
+  const doc = generateEnhancedPDF(plan, userProfile);
   const buffer = await new Promise((resolve, reject) => {
     const bufs = [];
     doc.on('data', chunk => bufs.push(chunk));
@@ -442,8 +370,8 @@ async function sendWorkoutPlanWithResend(email, plan, userProfile = {}, nutritio
   await resend.emails.send({
     from: 'support@brosplit.org',
     to: email,
-    subject: `Your ${nutrition ? 'Training + Nutrition' : '6-Week'} Plan is Ready${userProfile.name ? `, ${userProfile.name}` : ''}`,
-    html: `<p>Your personalized ${nutrition ? 'training + nutrition ' : ''}plan is attached!</p>`,
+    subject: `Your 6-Week Plan is Ready${userProfile.name ? `, ${userProfile.name}` : ''}`,
+    html: `<p>Your personalized workout plan is attached!</p>`,
     attachments: [
       {
         filename: 'BroSplit-Plan.pdf',
@@ -456,11 +384,12 @@ async function sendWorkoutPlanWithResend(email, plan, userProfile = {}, nutritio
 
 app.post('/api/email-plan', async (req, res) => {
   try {
-    const { email, plan, userProfile = {}, nutrition = null } = req.body;
+    const { email, plan, userProfile = {} } = req.body;
     if (!email || !plan) {
       return res.status(400).json({ error: 'Email and plan are required' });
     }
-    await sendWorkoutPlanWithResend(email, plan, userProfile, nutrition);
+
+    await sendWorkoutPlanWithResend(email, plan, userProfile);
     res.json({ success: true });
   } catch (err) {
     console.error("❌ Email delivery failed:", err);
