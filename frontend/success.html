@@ -12,61 +12,71 @@
       radial-gradient(circle at 80% 20%, #4ecdc4 0%, transparent 50%),
       radial-gradient(circle at 40% 40%, #45b7d1 0%, transparent 50%);opacity:.1;z-index:-1}
 
-    /* Sticky Email */
-    .sticky-email-bar{position:fixed;top:0;left:0;right:0;background:rgba(255,107,107,.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,107,107,.3);box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:1000;transform:translateY(-100%);transition:transform .35s ease}
-    .sticky-email-bar.show{transform:translateY(0)}
-    .sticky-content{display:flex;align-items:center;justify-content:center;gap:1rem;padding:1rem;max-width:1000px;margin:0 auto;position:relative}
-    .sticky-text{color:#fff;font-weight:600}
-    .btn-sticky{background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.25);padding:.6rem 1.2rem;border-radius:12px;font-weight:700;cursor:pointer;transition:.2s}
-    .btn-sticky:hover{transform:translateY(-1px)}
-    .btn-dismiss{position:absolute;right:1rem;background:transparent;border:none;color:#fff8;padding:.25rem .5rem;font-size:1.5rem;cursor:pointer}
-
     .container{max-width:1000px;margin:0 auto;padding:2rem;position:relative;z-index:1}
-    .container.with-sticky{padding-top:5.5rem}
-    .header{text-align:center;margin-bottom:2rem}
-    .header h1{font-size:3rem;font-weight:900;margin-bottom:.25rem;background:linear-gradient(135deg,#ff6b6b,#4ecdc4,#45b7d1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    .subtitle{color:#e0e0e0}
+    .header{text-align:center;margin-bottom:2rem;animation:slideDown .6s ease-out}
+    .header h1{font-size:3rem;font-weight:900;margin-bottom:.5rem;background:linear-gradient(135deg,#ff6b6b,#4ecdc4,#45b7d1);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.02em;line-height:1.1}
+    .subtitle{font-size:1.1rem;color:#e0e0e0}
 
-    .card{background:rgba(255,255,255,.05);backdrop-filter:blur(16px);border-radius:20px;padding:2rem;border:1px solid rgba(255,255,255,.1);box-shadow:0 25px 50px -12px rgba(0,0,0,.5);margin-bottom:1.2rem}
-    .success-title{font-size:2rem;font-weight:800;color:#4ecdc4;margin-bottom:.6rem;text-align:center}
+    /* Sticky email bar — hidden by default, shown programmatically */
+    .sticky-email-bar{display:none;position:fixed;top:0;left:0;right:0;background:rgba(255,107,107,.95);backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(255,107,107,.3);box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:1000;transform:translateY(-100%);transition:transform .35s ease}
+    .sticky-email-bar.show{display:block;animation:slideDownSticky .45s ease-out forwards}
+    .sticky-content{display:flex;align-items:center;justify-content:center;gap:1rem;padding:1rem;max-width:1000px;margin:0 auto;position:relative}
+    .sticky-text{color:#fff;font-weight:600;font-size:1rem}
+    .btn-sticky{background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.3);padding:.6rem 1.5rem;border-radius:12px;
+      font-weight:700;cursor:pointer;transition:all .2s ease;font-size:.95rem;text-transform:uppercase;letter-spacing:.5px}
+    .btn-sticky:hover{background:rgba(255,255,255,.3);transform:translateY(-1px)}
+    .btn-dismiss{background:transparent;color:rgba(255,255,255,.7);border:none;font-size:1.4rem;cursor:pointer;padding:.25rem .5rem;border-radius:6px;position:absolute;right:1rem}
 
-    .btn{padding:1rem 2rem;border:none;border-radius:14px;font-weight:800;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:.5rem;text-decoration:none}
+    /* Cards + buttons */
+    .card{background:rgba(255,255,255,.05);backdrop-filter:blur(20px);border-radius:24px;padding:2rem;border:1px solid rgba(255,255,255,.1);
+      box-shadow:0 25px 50px -12px rgba(0,0,0,.5);margin-bottom:1.25rem}
+    .success-card{display:flex;flex-direction:column;align-items:center;text-align:center;overflow:hidden}
+    .success-title{font-size:2rem;font-weight:800;color:#4ecdc4;margin:.25rem 0 1rem}
+    .button-group{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+    .btn{padding:1rem 2rem;border:none;border-radius:16px;font-size:1.05rem;font-weight:800;cursor:pointer;transition:all .2s ease;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem;letter-spacing:.5px}
     .btn-primary{background:linear-gradient(135deg,#ff6b6b,#ff5252);color:#fff}
-    .btn-secondary{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.18)}
+    .btn-secondary{background:rgba(255,255,255,.1);color:#e0e0e0;border:1px solid rgba(255,255,255,.2)}
     .btn:disabled{opacity:.6;cursor:not-allowed}
 
-    .plan-header{text-align:center;margin:0 0 1.2rem}
-    #plan{background:#fff;color:#1f2937;border-radius:14px;padding:1.6rem;white-space:pre-wrap}
+    /* Section headers */
+    .section-title{font-size:1.6rem;font-weight:900;margin-bottom:.75rem}
+    .muted{color:#cbd5e1}
 
-    /* Nutrition */
-    .nutrition-card{background:linear-gradient(180deg,rgba(20,83,45,.35),rgba(15,23,42,.2));border:1px solid rgba(16,185,129,.25);border-radius:18px;padding:1.4rem;margin:1.2rem 0}
-    .n-title{display:flex;align-items:center;gap:.6rem;font-weight:900;font-size:1.4rem;margin-bottom:.6rem}
-    .chip-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.6rem;margin:.6rem 0}
-    .chip{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);padding:.7rem 1rem;border-radius:12px}
-    .soft{font-family:ui-monospace,Menlo,Consolas,monospace;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:1rem;white-space:pre-wrap}
+    /* Workout/Nutrition bodies themed identically */
+    .white-card{background:#fff;color:#1f2937;border-radius:16px;padding:1.5rem;border:1px solid #e5e7eb}
+    #plan h1{font-size:1.6rem;font-weight:900;margin:0 0 1rem 0;border-bottom:3px solid #ff6b6b;padding-bottom:.75rem}
+    #plan h2{font-size:1.25rem;font-weight:800;margin:1.25rem 0 .75rem}
+    #plan h3{font-size:1.05rem;font-weight:700;margin:1rem 0 .5rem}
+    #plan ul{margin-left:1rem}
 
-    .day{margin:1rem 0;padding:1rem;border:1px dashed rgba(255,255,255,.15);border-radius:12px}
-    .meal{margin:.5rem 0 .2rem;font-weight:700}
-    .ingredients{margin-left:1rem;opacity:.9}
-    .g-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.6rem}
-    .g-item{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:.8rem 1rem;border-radius:12px}
+    /* Nutrition UI */
+    .nutrition-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:1rem 0}
+    .pill{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:1rem;border-radius:12px}
+    .code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.95rem;white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1);padding:1rem;border-radius:12px}
+    .divider{height:2px;background:linear-gradient(90deg,transparent,#4ecdc4,transparent);border:0;margin:1.25rem 0}
 
-    .guarantee{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3);padding:1rem;border-radius:12px;text-align:center;margin-top:1rem}
+    /* Loading */
+    .loading-card{text-align:center}
+    .progress{height:8px;background:rgba(255,255,255,.15);border-radius:6px;overflow:hidden;margin-top:1rem}
+    .bar{height:100%;background:linear-gradient(135deg,#ff6b6b,#ff5252);animation:load 2.2s ease-in-out infinite}
 
-    @media (max-width:768px){
-      .container{padding:1rem}
-      .header h1{font-size:2.2rem}
-      #plan{padding:1.1rem}
-    }
+    /* Responsive */
+    @keyframes slideDown{from{transform:translateY(-16px);opacity:0}to{transform:translateY(0);opacity:1}}
+    @keyframes slideDownSticky{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+    @keyframes load{0%{width:0%}50%{width:80%}100%{width:100%}}
+    @media (max-width:768px){.container{padding:1rem}.header h1{font-size:2.2rem}}
+    .with-sticky{padding-top:5.5rem}
   </style>
 </head>
 <body>
   <div class="bg-gradient"></div>
 
-  <!-- Sticky Email Bar -->
-  <div id="stickyEmailBar" class="sticky-email-bar" style="display:none;">
+  <!-- Sticky email bar (hidden until we show it after generation) -->
+  <div id="stickyEmailBar" class="sticky-email-bar">
     <div class="sticky-content">
-      <span class="sticky-text">📧 Don’t lose your plan! Get your PDFs emailed to you.</span>
+      <span class="sticky-text">📧 Don’t lose your plan! Get both PDFs emailed to you.</span>
       <button id="stickyEmailBtn" class="btn-sticky">Email My PDFs</button>
       <button id="dismissSticky" class="btn-dismiss">×</button>
     </div>
@@ -75,57 +85,51 @@
   <div class="container" id="mainContainer">
     <div class="header">
       <h1>BroSplit AI</h1>
-      <p class="subtitle" id="subtitle">Your personalized workout plan is ready</p>
+      <p id="subtitle" class="subtitle">Your personalized workout plan is ready</p>
     </div>
 
-    <div class="card">
-      <h2 class="success-title">🎉 Payment Complete!</h2>
-      <p class="subtitle" id="successDesc" style="text-align:center;margin-bottom:1rem;">
-        You're ready to generate your personalized plan!
-      </p>
-      <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
+    <!-- Success / action -->
+    <div class="card success-card">
+      <h2 class="success-title">🎉 Payment Complete</h2>
+      <p id="successDesc" class="muted">You're ready to generate your personalized plan!</p>
+      <div class="button-group" style="margin-top:1rem">
         <button id="generatePlan" class="btn btn-primary">🚀 Generate My Plan</button>
         <a href="index.html" class="btn btn-secondary">← Back to Start</a>
       </div>
     </div>
 
+    <!-- Loading area -->
     <div id="planLoading"></div>
     <div id="planError"></div>
 
-    <div id="planContainer" class="card" style="display:none;">
-      <div class="plan-header">
-        <h2 style="font-size:1.6rem;font-weight:900;">🏋️‍♂️ Your Custom Workout Plan</h2>
-        <p class="subtitle">Tailored specifically for your goals and preferences</p>
-      </div>
-      <div id="plan"></div>
+    <!-- Workout -->
+    <div id="planContainer" class="card" style="display:none">
+      <h2 class="section-title">🏋️ Your Custom Workout Plan</h2>
+      <p class="muted" style="margin-bottom:1rem">Tailored specifically for your goals and preferences</p>
+      <div id="plan" class="white-card"></div>
+    </div>
 
-      <!-- Nutrition -->
-      <div id="nutritionContainer" class="nutrition-card" style="display:none;">
-        <div class="n-title">🥗 Nutrition Plan <span style="opacity:.85;font-weight:600;">(Macros + Meals)</span></div>
-        <div id="nutritionSummary" class="chip-grid"></div>
-        <div id="nutritionGuidelines" class="soft" style="margin:.6rem 0;"></div>
-        <div id="nutritionDays"></div>
+    <!-- Nutrition -->
+    <div id="nutritionContainer" class="card" style="display:none">
+      <h2 class="section-title">🥗 Nutrition Plan (Macros + Meals)</h2>
+      <div id="nutritionSummary" class="nutrition-grid"></div>
+      <div id="nutritionGuidelines" class="code" style="display:none"></div>
+      <hr class="divider" />
+      <div id="nutritionDays"></div>
+      <hr class="divider" />
+      <h3 style="margin:.25rem 0 0.5rem">🛒 Grocery List</h3>
+      <div id="groceryList" class="nutrition-grid"></div>
+      <h3 style="margin:1rem 0 0.5rem">🍱 Batch Prep</h3>
+      <div id="batchPrep" class="code"></div>
 
-        <h3 class="n-title" style="margin-top:.8rem;">🛒 Grocery List</h3>
-        <div id="groceryList" class="g-grid"></div>
-
-        <h3 class="n-title" style="margin-top:.8rem;">🍱 Batch Prep</h3>
-        <div id="batchPrep" class="soft"></div>
-
-        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.8rem;">
-          <button id="downloadNutritionPdf" class="btn btn-secondary">⬇️ Download Nutrition PDF</button>
-          <button id="downloadNutritionJson" class="btn btn-secondary">⬇️ Download Nutrition JSON</button>
-          <button id="copyGrocery" class="btn btn-secondary">📋 Copy Grocery List</button>
-        </div>
-      </div>
-
-      <div class="guarantee">
-        <p><strong>💯 No-BS Guarantee</strong><br>If you don't see noticeable gains in the first 30 days, we'll refund every penny.</p>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem">
+        <button id="downloadNutrition" class="btn btn-secondary">⬇️ Download Nutrition PDF</button>
       </div>
     </div>
 
-    <div style="text-align:center;">
-      <button id="emailPlan" class="btn btn-primary" style="display:none;margin:1rem auto;">📧 Email Me My PDFs</button>
+    <!-- Email button -->
+    <div style="text-align:center;margin:1rem 0 2rem">
+      <button id="emailPlan" class="btn btn-primary" style="display:none">📧 Email Me My PDFs</button>
     </div>
   </div>
 
@@ -134,19 +138,19 @@
     const API_URL = window.location.origin;
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get('session_id');
+
     if (!sessionId) {
       document.body.innerHTML = `
         <div class="bg-gradient"></div>
         <div class="container">
-          <div class="card">
-            <h2 style="color:#ff6b6b">⚠️ Error: No session ID found</h2>
-            <p class="subtitle">Please return to the homepage and try again.</p>
-            <a href="index.html" class="btn btn-primary">← Back to Start</a>
-          </div>
+          <div class="card"><h2>⚠️ Error: No session ID found</h2>
+          <p>Please return to the homepage and try again.</p>
+          <a href="index.html" class="btn btn-primary" style="margin-top:1rem">← Back to Start</a></div>
         </div>`;
       throw new Error("No session_id in URL");
     }
 
+    // Pull form data + tier
     let formData = {};
     let planType = 'workout';
     try {
@@ -156,200 +160,167 @@
 
     if (planType === 'pro') {
       document.getElementById('subtitle').textContent = 'Your personalized training + nutrition plan is ready';
-      document.getElementById('successDesc').textContent = 'Time to generate your workout and nutrition plan.';
+      document.getElementById('successDesc').textContent = 'We’ll generate your workout plan and your macros + meals.';
     }
 
-    const generateBtn = document.getElementById('generatePlan');
-    const emailBtn = document.getElementById('emailPlan');
+    // DOM refs
+    const mainContainer = document.getElementById('mainContainer');
+    const stickyEmailBar = document.getElementById('stickyEmailBar');
     const stickyEmailBtn = document.getElementById('stickyEmailBtn');
     const dismissStickyBtn = document.getElementById('dismissSticky');
-    const stickyEmailBar = document.getElementById('stickyEmailBar');
-    const mainContainer = document.getElementById('mainContainer');
-
-    const planDiv = document.getElementById('plan');
     const planCard = document.getElementById('planContainer');
-    const planError = document.getElementById('planError');
+    const planDiv = document.getElementById('plan');
     const planLoading = document.getElementById('planLoading');
+    const planError = document.getElementById('planError');
+    const emailBtn = document.getElementById('emailPlan');
 
-    const nutritionContainer = document.getElementById('nutritionContainer');
+    const nutritionCard = document.getElementById('nutritionContainer');
     const nutritionSummary = document.getElementById('nutritionSummary');
     const nutritionGuidelines = document.getElementById('nutritionGuidelines');
     const nutritionDays = document.getElementById('nutritionDays');
     const groceryList = document.getElementById('groceryList');
     const batchPrep = document.getElementById('batchPrep');
-    const downloadNutritionPdf = document.getElementById('downloadNutritionPdf');
-    const downloadNutritionJson = document.getElementById('downloadNutritionJson');
-    const copyGrocery = document.getElementById('copyGrocery');
+    const downloadNutrition = document.getElementById('downloadNutrition');
 
     let stickyBarDismissed = false;
     let nutritionPlan = null;
 
-    function showStickyBar() {
-      if (!stickyBarDismissed) {
-        stickyEmailBar.style.display = 'block';
+    function showStickyBar(){
+      if(!stickyBarDismissed){
         stickyEmailBar.classList.add('show');
         mainContainer.classList.add('with-sticky');
       }
     }
-    function hideStickyBar() {
+    function hideStickyBar(){
       stickyEmailBar.classList.remove('show');
       mainContainer.classList.remove('with-sticky');
-      setTimeout(()=>{ if(!stickyEmailBar.classList.contains('show')) stickyEmailBar.style.display='none'; }, 320);
     }
     dismissStickyBtn.addEventListener('click', ()=>{ stickyBarDismissed = true; hideStickyBar(); });
 
-    function maybeMacrosText(m) {
-      if (!m) return '';
-      const vals = [m.kcal, m.protein_g, m.carbs_g, m.fat_g];
-      const valid = vals.some(v => typeof v === 'number' && v > 0);
-      return valid ? ` (${m.kcal||0} kcal • P${m.protein_g||0}/C${m.carbs_g||0}/F${m.fat_g||0})` : '';
-    }
-
-    function renderNutrition(n) {
-      if (!n) return;
-
-      // Summary chips
-      const s = n.summary || {};
-      const chips = [
-        ["Calories", `${s.calories} kcal`],
-        ["Protein", `${s.protein_g} g/day (~${s.per_meal_protein_g} g/meal)`],
-        ["Carbs", `${s.carbs_g} g/day`],
-        ["Fat", `${s.fat_g} g/day`],
-        ["Fiber", `${s.fiber_target_g} g/day`],
-        ["Sodium cap", `${s.sodium_cap_mg} mg/day`],
-        ["Meals/day", `${s.meals_per_day}`],
-      ];
-      nutritionSummary.innerHTML = chips.map(([k,v]) => `<div class="chip"><strong>${k}</strong><br>${v}</div>`).join('');
-
-      // Guidelines
-      const g = n.guidelines || {};
-      nutritionGuidelines.textContent =
-        `• Protein per meal: ${g.protein_per_meal_rule || '—'}\n` +
-        `• Pre/Post training: ${g.pre_post || '—'}\n` +
-        `• Notes: ${g.notes || '—'}`;
-
-      // Days (first 7)
-      nutritionDays.innerHTML = (n.day_plans||[]).slice(0,7).map(d=>{
-        const meals = (d.meals||[]).map(m=>{
-          const ing = (m.ingredients||[]).map(i=>{
-            if (i.grams) return `• ${i.item} — ${i.grams} g`;
-            if (i.kg)    return `• ${i.item} — ${i.kg} kg`;
-            if (i.ml)    return `• ${i.item} — ${i.ml} ml`;
-            if (i.count) return `• ${i.item} — ${i.count} ct`;
-            return `• ${i.item}`;
-          }).join('\n');
-          return `
-            <div class="meal">${m.name || 'Meal'}${maybeMacrosText(m.macros)}</div>
-            <div>${m.recipe || ''}</div>
-            ${ing ? `<div class="ingredients soft" style="margin:.4rem 0 0">${ing}</div>` : ''}
-          `;
-        }).join('');
-        return `<div class="day"><div style="font-weight:800;margin-bottom:.3rem;">Day ${d.day} — ${d.total_kcal || s.calories} kcal</div>${meals}</div>`;
-      }).join('');
-
-      // Grocery
-      groceryList.innerHTML = (n.grocery_list?.items||[]).map(it=>{
-        const qty = it.kg ? `${it.kg} kg` : it.ml ? `${it.ml} ml` : it.count ? `${it.count} ct` : it.grams ? `${it.grams} g` : '';
-        return `<div class="g-item">${it.item}${qty ? ` — ${qty}` : ''}</div>`;
-      }).join('');
-
-      // Batch prep
-      batchPrep.textContent = (n.batch_prep||[]).map(b => `• ${b.day}: ${Array.isArray(b.steps)? b.steps.join(' • ') : ''}`).join('\n');
-
-      nutritionContainer.style.display = 'block';
-    }
-
-    function blobDownload(filename, content, type='application/octet-stream') {
-      const blob = new Blob([content], {type}); const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
-    }
-
-    downloadNutritionJson.addEventListener('click', () => {
-      if (!nutritionPlan) return alert('Nutrition plan not generated yet.');
-      blobDownload('BroSplit-Nutrition-Plan.json', JSON.stringify(nutritionPlan, null, 2), 'application/json');
-    });
-
-    downloadNutritionPdf.addEventListener('click', async () => {
-      if (!nutritionPlan) return alert('Nutrition plan not generated yet.');
-      const btn = downloadNutritionPdf; const txt = btn.textContent; btn.disabled = true; btn.textContent = '⏳ Building PDF…';
-      try {
-        const resp = await fetch(`${API_URL}/api/nutrition-pdf`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ plan: nutritionPlan, userProfile: { name: formData.name || '' } })
-        });
-        if (!resp.ok) throw new Error('Failed to build PDF');
-        const blob = await resp.blob();
-        blobDownload('BroSplit-Nutrition-Plan.pdf', blob, 'application/pdf');
-      } catch (e) {
-        alert('PDF failed: ' + e.message);
-      } finally { btn.disabled=false; btn.textContent = txt; }
-    });
-
-    async function sendEmail(button) {
-      const originalText = button.innerHTML;
-      button.disabled = true; button.innerHTML = '⏳ Sending…';
+    // Email (includes both PDFs if nutrition was generated)
+    async function sendEmail(button){
+      const original = button.innerHTML; button.disabled = true; button.innerHTML = '⏳ Sending…';
       const email = (formData.email || '').trim();
-      const planText = (document.getElementById('plan').innerText || '').trim();
-      if (!email) { alert("⚠️ No email address found."); button.innerHTML = originalText; button.disabled = false; return; }
-      if (!planText) { alert("⚠️ Generate your plan first."); button.innerHTML = originalText; button.disabled = false; return; }
-
-      try {
+      if(!email){ alert("⚠️ No email found. Please go back and enter your email."); button.innerHTML = original; button.disabled = false; return; }
+      const planText = planDiv.innerText || planDiv.textContent || '';
+      try{
         const resp = await fetch(`${API_URL}/api/email-plan`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, plan: planText, nutrition: nutritionPlan, userProfile: { name: formData.name || '' } })
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ email, plan: planText, nutrition: nutritionPlan })
         });
-        if (!resp.ok) throw new Error("Server rejected the email");
+        if(!resp.ok) throw new Error('Server rejected the email.');
         button.innerHTML = '✅ Sent!';
         localStorage.removeItem('brosplitForm'); localStorage.removeItem('planType');
-        if (button === stickyEmailBtn) { stickyBarDismissed = true; hideStickyBar(); }
-        setTimeout(() => { button.innerHTML = originalText; }, 2000);
-      } catch (err) {
-        console.error(err); button.innerHTML = '❌ Failed'; alert("⚠️ " + (err.message || 'Email failed'));
-        setTimeout(() => { button.innerHTML = originalText; }, 2000);
-      } finally { button.disabled = false; }
+        setTimeout(()=> button.innerHTML = original, 2500);
+        stickyBarDismissed = true; hideStickyBar();
+      }catch(e){
+        console.error(e); button.innerHTML = '❌ Failed'; alert("⚠️ " + (e.message || 'Email failed'));
+        setTimeout(()=> button.innerHTML = original, 2500);
+      }finally{ button.disabled = false; }
+    }
+    document.getElementById('emailPlan').addEventListener('click', e => sendEmail(e.currentTarget));
+    stickyEmailBtn.addEventListener('click', e => sendEmail(e.currentTarget));
+
+    // Render Nutrition (handles both .day_plans and .days; shows ALL days)
+    function renderNutrition(n){
+      if(!n) return;
+      const s = n.summary || {};
+      nutritionSummary.innerHTML = `
+        <div class="pill"><strong>Calories</strong><br>${s.calories || s.kcal} kcal</div>
+        <div class="pill"><strong>Protein</strong><br>${s.protein_g} g/day${s.per_meal_protein_g ? ` (~${s.per_meal_protein_g} g/meal)` : ''}</div>
+        <div class="pill"><strong>Carbs</strong><br>${s.carbs_g} g/day</div>
+        <div class="pill"><strong>Fat</strong><br>${s.fat_g} g/day</div>
+        <div class="pill"><strong>Fiber</strong><br>${s.fiber_target_g} g/day</div>
+        <div class="pill"><strong>Sodium cap</strong><br>${s.sodium_cap_mg} mg/day</div>
+        <div class="pill"><strong>Meals/day</strong><br>${s.meals_per_day}</div>
+      `;
+
+      const g = n.guidelines || {};
+      const gText = [
+        g.protein_per_meal_rule ? `• Protein per meal: ${g.protein_per_meal_rule}` : null,
+        g.pre_post ? `• Pre/Post training: ${g.pre_post}` : null,
+        g.notes ? `• Notes: ${g.notes}` : null
+      ].filter(Boolean).join('\n');
+      if (gText) { nutritionGuidelines.style.display = 'block'; nutritionGuidelines.textContent = gText; }
+
+      const days = n.day_plans || n.days || [];
+      nutritionDays.innerHTML = (days || []).map((d, i) => {
+        const kcal = d.total_kcal || s.calories || s.kcal || '';
+        const meals = (d.meals || []).map(m => {
+          const ing = (m.ingredients || []).map(i => {
+            const qty = i.grams ? `${i.grams} g` : i.ml ? `${i.ml} ml` : i.count ? `${i.count} ct` : (i.qty || '');
+            return `• ${i.item}${qty ? ` — ${qty}` : ''}`;
+          }).join('\n');
+          const macro = m.macros ? ` (${m.macros.kcal || 0} kcal • P${m.macros.protein_g || 0}/C${m.macros.carbs_g || 0}/F${m.macros.fat_g || 0})` : '';
+          return `\n${m.name || 'Meal'}: ${m.recipe || ''}${macro}\n${ing}`;
+        }).join('\n');
+        return `
+          <div class="white-card" style="margin:.75rem 0">
+            <div style="font-weight:800;margin-bottom:.25rem">Day ${d.day || (i+1)} — ${kcal} kcal</div>
+            <div class="code">${meals.trim()}</div>
+          </div>
+        `;
+      }).join('');
+
+      const groceries = (n.grocery_list && n.grocery_list.items) || n.grocery_list || [];
+      groceryList.innerHTML = (groceries || []).map(it => {
+        const unit = it.kg ? `${it.kg} kg` : it.ml ? `${it.ml} ml` : it.count ? `${it.count} ct` : '';
+        return `<div class="pill">${it.item || it.name}${unit ? ` — <span style="opacity:.85">${unit}</span>` : ''}</div>`;
+      }).join('');
+
+      batchPrep.textContent = (n.batch_prep || []).map(b => `• ${b.day}: ${(b.steps || []).join(' • ')}`).join('\n');
+
+      nutritionCard.style.display = 'block';
     }
 
-    emailBtn.addEventListener('click', () => sendEmail(emailBtn));
-    stickyEmailBtn.addEventListener('click', () => sendEmail(stickyEmailBtn));
+    // Download nutrition PDF
+    downloadNutrition.addEventListener('click', async () => {
+      if (!nutritionPlan) return alert('Generate the nutrition plan first.');
+      const resp = await fetch(`${API_URL}/api/nutrition-pdf`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: nutritionPlan })
+      });
+      if (!resp.ok) return alert('Failed to build PDF.');
+      const { base64 } = await resp.json();
+      const blob = await (await fetch(`data:application/pdf;base64,${base64}`)).blob();
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'BroSplit-Nutrition-Plan.pdf'; a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+    });
 
-    // Generate flow
-    document.getElementById('generatePlan').addEventListener('click', async () => {
-      planDiv.innerHTML=""; planError.innerHTML=""; planCard.style.display="none";
-      emailBtn.style.display="none"; nutritionContainer.style.display="none";
-      nutritionPlan=null; stickyBarDismissed=false; hideStickyBar();
-      generateBtn.disabled=true;
+    // Generate flow with full loading UX
+    document.getElementById('generatePlan').addEventListener('click', async (ev) => {
+      ev.currentTarget.disabled = true; planError.innerHTML = ""; hideStickyBar();
+      planCard.style.display = "none"; nutritionCard.style.display = "none"; emailBtn.style.display = "none";
+      planDiv.innerHTML = ""; nutritionPlan = null;
 
+      // Phase 1 — Workout
       planLoading.innerHTML = `
-        <div class="card">
-          <div style="font-size:3rem;text-align:center">🤖💭🏋️</div>
-          <h3 style="text-align:center;margin:.6rem 0;">Generating your workout plan…</h3>
-          <p class="subtitle" style="text-align:center">Analyzing your inputs and building the perfect split.</p>
+        <div class="card loading-card">
+          <div>🤖 Building your workout split…</div>
+          <div class="progress"><div class="bar"></div></div>
         </div>`;
 
       try {
-        // 1) Workout
         const res = await fetch(`${API_URL}/api/generate-plan`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ sessionId, ...formData })
         });
         if (!res.ok) throw new Error("Could not generate workout plan.");
         const { plan } = await res.json();
-
         planDiv.innerHTML = marked.parse(plan);
         planCard.style.display = "block";
         emailBtn.style.display = "inline-flex";
         planCard.scrollIntoView({ behavior: 'smooth' });
 
-        // 2) Nutrition (Pro)
-        if (planType === 'pro') {
+        // Phase 2 — Nutrition (Pro only)
+        if ((localStorage.getItem('planType') || 'workout') === 'pro') {
           planLoading.innerHTML = `
-            <div class="card" style="border-color:rgba(16,185,129,.35)">
-              <h3 style="text-align:center;color:#86efac">🥗 Generating your nutrition plan…</h3>
-              <p class="subtitle" style="text-align:center">Macros, meals, grocery list, and batch prep.</p>
+            <div class="card loading-card">
+              <div>🥗 Creating your nutrition plan…</div>
+              <div class="progress"><div class="bar"></div></div>
             </div>`;
+
           const payload = {
             sex: formData.sex,
             age: Number(formData.age),
@@ -365,33 +336,37 @@
             budget_level: formData.budget_level || 'normal',
             email: formData.email
           };
+
           const nres = await fetch(`${API_URL}/api/nutrition`, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify(payload)
           });
-          if (!nres.ok) throw new Error("Could not generate nutrition plan.");
-          const ndata = await nres.json();
-          nutritionPlan = ndata.plan;
-          renderNutrition(nutritionPlan);
+          if(!nres.ok) throw new Error("Could not generate nutrition plan.");
+          const { plan: nPlan } = await nres.json();
+          nutritionPlan = nPlan;
+          renderNutrition(nPlan);
         }
 
-        planLoading.innerHTML = '';
-        setTimeout(()=>{ if (planCard.style.display === "block") showStickyBar(); }, 1500);
+        // Done
+        planLoading.innerHTML = `
+          <div class="card loading-card" style="background:rgba(78,205,196,.1);border-color:rgba(78,205,196,.3)">
+            <div>✅ All set!</div>
+          </div>`;
+        setTimeout(()=> { planLoading.innerHTML = ""; showStickyBar(); }, 1200);
 
       } catch (err) {
-        planLoading.innerHTML = '';
+        console.error(err);
+        planLoading.innerHTML = "";
         planError.innerHTML = `
-          <div class="card" style="border-color:rgba(255,107,107,.35)">
-            <h3 style="color:#ff6b6b">⚠️ Generation Failed</h3>
-            <p class="subtitle">${err.message || "Could not generate plan."}</p>
-            <button onclick="location.reload()" class="btn btn-primary" style="margin-top:.6rem">🔄 Try Again</button>
+          <div class="card">
+            <h3>⚠️ Generation Failed</h3>
+            <p>${err.message || "Could not generate plan."}</p>
+            <button onclick="location.reload()" class="btn btn-primary" style="margin-top:1rem">🔄 Try Again</button>
           </div>`;
       } finally {
-        generateBtn.disabled=false;
+        ev.currentTarget.disabled = false;
       }
     });
-
-    // Clean up any animation classes (smoother load)
-    setTimeout(()=>{ document.querySelectorAll('.celebrate').forEach(el=>el.classList.remove('celebrate')); }, 600);
   </script>
 </body>
 </html>
