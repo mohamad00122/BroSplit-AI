@@ -1,5 +1,5 @@
 // File: server.js (BroSplit AI)
-// Focus: unified/split PDF generation + Pro gating for nutrition
+// Focus: split PDFs for Pro (workout + nutrition), single PDF for Base (workout only) + Pro gating for nutrition
 
 // ─── Imports & Configuration ──────────────────────────────────────────────────
 import 'dotenv/config';
@@ -34,8 +34,8 @@ app.use(rateLimit({ windowMs: 60_000, limit: 120 }));
 
 // ─── Stripe ───────────────────────────────────────────────────────────────────
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-const PRICE_BASE = process.env.STRIPE_PRICE_BASE || 'price_1RsQJUAhLaqVN2Rssepup9EE'; // $5 Workout-only
-const PRICE_PRO = process.env.STRIPE_PRICE_PRO || 'price_1RsQJUAhLaqVN2Rssepup9EE'; // $15 Workout+Nutrition
+const PRICE_BASE = process.env.STRIPE_PRICE_BASE || 'price_base_5usd_REPLACE'; // $5 Workout-only
+const PRICE_PRO = process.env.STRIPE_PRICE_PRO || 'price_pro_15usd_REPLACE'; // $15 Workout+Nutrition
 
 // ─── OpenAI ───────────────────────────────────────────────────────────────────
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -369,7 +369,7 @@ app.post('/api/nutrition', genLimiter, async (req, res) => {
 });
 
 // ─── Email & PDF Endpoints ───────────────────────────────────────────────────
-async function sendPlansWithResend({ email, workoutText, nutritionJson, userProfile = {}, merge = true }) {
+async function sendPlansWithResend({ email, workoutText, nutritionJson, userProfile = {}, merge = false }) {
   if (!email || !workoutText) throw new Error('EMAIL_OR_PLAN_MISSING');
 
   // If nutrition is present and merge==true → single combined PDF
@@ -410,7 +410,7 @@ async function sendPlansWithResend({ email, workoutText, nutritionJson, userProf
 app.post('/api/email-plan', async (req, res) => {
   try {
     const { email, plan, nutrition, userProfile = {}, merge } = req.body;
-    await sendPlansWithResend({ email, workoutText: plan, nutritionJson: nutrition, userProfile, merge: merge ?? true });
+    await sendPlansWithResend({ email, workoutText: plan, nutritionJson: nutrition, userProfile, merge: merge ?? false });
     res.json({ success: true });
   } catch (err) {
     console.error('❌ Email delivery failed:', err);
