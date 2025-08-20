@@ -1,6 +1,7 @@
 // File: server.js (BroSplit AI)
 // Focus: split PDFs for Pro (workout + nutrition), single PDF for Base (workout only)
 // + robust JSON + auto-repair to ensure 7-day nutrition with N meals/day
+// + smart batch-prep derived from the actual grocery list & meals
 
 import 'dotenv/config';
 import express from 'express';
@@ -164,10 +165,10 @@ function renderNutritionSection({ doc, styles, apply, rule }, plan, userProfile 
     apply(styles.body);
     (d.meals || []).forEach(m => {
       const macros = m.macros ? ` (${m.macros.kcal || 0} kcal • P${m.macros.protein_g || 0}/C${m.macros.carbs_g || 0}/F${m.macros.fat_g || 0})` : '';
-      doc.text(`${m.name || 'Meal'}: ${m.recipe || ''}${macros}`);
+      doc.text(`${m.name || "Meal"}: ${m.recipe || ""}${macros}`);
       (m.ingredients || []).forEach(i => {
-        const qty = i.grams ? `${i.grams} g` : i.ml ? `${i.ml} ml` : i.count ? `${i.count} ct` : (i.qty || '');
-        doc.text(`   · ${i.item}${qty ? ` — ${qty}` : ''}`);
+        const qty = i.grams ? `${i.grams} g` : i.ml ? `${i.ml} ml` : i.count ? `${i.count} ct` : (i.qty || "");
+        doc.text(`   · ${i.item}${qty ? ` — ${qty}` : ""}`);
       });
       doc.moveDown(0.3);
     });
@@ -366,6 +367,130 @@ function expandProgrammatically(plan, mealsPerDay) {
   return out;
 }
 
+// ─── Batch-Prep enrichment helpers ───────────────────────────────────────────
+function norm(s) { return String(s || '').toLowerCase(); }
+function prettyJoin(arr) {
+  if (!arr || arr.length === 0) return '';
+  if (arr.length === 1) return arr[0];
+  return arr.slice(0, -1).join(', ') + ' & ' + arr[arr.length - 1];
+}
+const KW = {
+  proteins: [
+    'chicken', 'beef', 'turkey', 'tuna', 'salmon', 'shrimp', 'cod', 'egg', 'eggs',
+    'tofu', 'tempeh', 'pork', 'yogurt', 'cottage cheese', 'beef strips',
+    'lentil', 'chickpea', 'black bean', 'beans'
+  ],
+  carbs: [
+    'rice', 'brown rice', 'quinoa', 'oats', 'rolled oats', 'pasta', 'noodle',
+    'potato', 'sweet potato', 'bread', 'whole grain bread', 'wrap', 'tortilla'
+  ],
+  veg: [
+    'broccoli', 'spinach', 'mixed greens', 'greens', 'asparagus', 'green beans',
+    'mixed vegetables', 'zucchini', 'bell pepper', 'peppers', 'lettuce',
+    'salad', 'carrot', 'celery', 'corn'
+  ],
+  breakfast: [
+    'oats', 'rolled oats', 'yogurt', 'almond milk', 'milk', 'berries', 'banana',
+    'protein powder', 'honey', 'toast'
+  ],
+  sauces: [
+    'olive oil', 'soy sauce', 'curry', 'tomato sauce', 'salsa', 'tahini',
+    'peanut butter', 'almond butter'
+  ]
+};
+function extractItemNames(plan) {
+  let names = [];
+  const gl = (plan?.grocery_list && plan.grocery_list.items) || plan?.grocery_list || [];
+  if (Array.isArray(gl) && gl.length) {
+    names = gl.map(it => norm(it.item || it.name || it));
+  } else {
+    const days = plan?.day_plans || plan?.days || [];
+    days.forEach(d => (d.meals || []).forEach(m => {
+      (m.ingredients || []).forEach(i => names.push(norm(i.item || i.name || i)));
+    }));
+  }
+  return Array.from(new Set(names.filter(Boolean)));
+}
+function filterByKeywords(names, keywords) {
+  const out = [];
+  names.forEach(n => {
+    const hit = keywords.find(k => n.includes(k));
+    if (hit) out.push(n.replace(/[-–]\s*\d+.*$/, '').trim());
+  });
+  return Array.from(new Set(out));
+}
+function buildBatchPrepFromPlan(plan, mealsPerDay) {
+  const names = extractItemNames(plan);
+  const proteins = filterByKeywords(names, KW.proteins);
+  const carbs    = filterByKeywords(names, KW.carbs);
+  const veg      = filterByKeywords(names, KW.veg);
+  const brk      = filterByKeywords(names, KW.breakfast);
+  const sauces   = filterByKeywords(names, KW.sauces);
+
+  const stepsSun = [];
+  const stepsThu = [];
+
+  if (proteins.length) {
+    const eggs = proteins.filter(p => p.includes('egg'));
+    const nonEggs = proteins.filter(p => !p.includes('egg'));
+    if (nonEggs.length) {
+      stepsSun.push(`Cook proteins in bulk: ${prettyJoin(nonEggs)}. Season simply (salt/pepper). Portion for ~3–4 days; freeze extra.`);
+    }
+    if (eggs.length) {
+      stepsSun.push(`Hard-boil eggs for quick meals/snacks.`);
+    }
+    stepsThu.push(`Top-up proteins (${prettyJoin(proteins)}). Reheat from frozen if pre-portioned.`);
+  }
+
+  if (carbs.length) {
+    const ovenables = carbs.filter(c => c.includes('potato'));
+    const stovetop  = carbs.filter(c => !c.includes('potato'));
+    if (stovetop.length) stepsSun.push(`Batch-cook grains/carbs: ${prettyJoin(stovetop)}.`);
+    if (ovenables.length) stepsSun.push(`Roast/bake: ${prettyJoin(ovenables)}.`);
+    stepsThu.push(`Cook a small fresh batch of carbs if low (e.g., ${prettyJoin(carbs.slice(0,3))}).`);
+  }
+
+  if (veg.length) {
+    const leafy = veg.filter(v => v.includes('green') || v.includes('spinach') || v.includes('salad') || v.includes('lettuce'));
+    const firm  = veg.filter(v => !leafy.includes(v));
+    if (firm.length) stepsSun.push(`Wash/chop sturdy veg: ${prettyJoin(firm)}. Store in airtight containers.`);
+    if (leafy.length) stepsSun.push(`Rinse/dry leafy greens (${prettyJoin(leafy)}); keep with paper towel to stay crisp.`);
+    stepsThu.push(`Refresh veg: chop a new batch and portion for lunches/dinners.`);
+  }
+
+  if (brk.length) {
+    stepsSun.push(`Assemble ${mealsPerDay >= 4 ? 'overnight oats / smoothie packs' : 'breakfast packs'} using ${prettyJoin(brk.slice(0,5))}.`);
+  }
+
+  if (sauces.length) {
+    stepsSun.push(`Mix quick sauces/marinades: ${prettyJoin(sauces.slice(0,4))}. Store in jars.`);
+  }
+
+  stepsSun.push(`Label containers with meal/day. Aim for ${mealsPerDay} meals per day × 7 days.`);
+  stepsThu.push(`Re-portion snacks; take inventory; adjust portions to stay on target.`);
+
+  return [
+    { day: 'Sunday',   steps: stepsSun },
+    { day: 'Thursday', steps: stepsThu }
+  ];
+}
+function ensureBatchPrep(plan, mealsPerDay) {
+  const current = Array.isArray(plan?.batch_prep) ? plan.batch_prep : [];
+  const weak = current.length < 2 || current.reduce((n, d) => n + ((d?.steps || []).length), 0) < 4;
+  if (weak) {
+    plan.batch_prep = buildBatchPrepFromPlan(plan, mealsPerDay);
+  } else {
+    const generated = buildBatchPrepFromPlan(plan, mealsPerDay);
+    const have = new Set(current.flatMap(d => (d.steps || [])));
+    generated.forEach(g => {
+      const slot = current.find(d => norm(d.day) === norm(g.day)) || (current.push({ day: g.day, steps: [] }), current[current.length-1]);
+      g.steps.forEach(s => { if (!have.has(s)) slot.steps.push(s); });
+    });
+    plan.batch_prep = current;
+  }
+  return plan;
+}
+
 // ─── Nutrition generation (PRO-gated) ────────────────────────────────────────
 app.post('/api/nutrition', genLimiter, async (req, res) => {
   try {
@@ -418,6 +543,9 @@ app.post('/api/nutrition', genLimiter, async (req, res) => {
         finalPlan = expandProgrammatically(finalPlan, mealsPerDay);
       }
     }
+
+    // Ensure batch_prep reflects ALL proteins/carbs/veg in the plan
+    finalPlan = ensureBatchPrep(finalPlan, mealsPerDay);
 
     // Persist meals/day into summary if missing
     finalPlan.summary = finalPlan.summary || {};
