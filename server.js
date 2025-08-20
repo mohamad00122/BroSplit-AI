@@ -183,10 +183,34 @@ function renderNutritionSection({ doc, styles, apply, rule }, plan, userProfile 
   });
   doc.addPage();
 
+  // ---------- Reworked Batch Prep (headings + bullet lists) ----------
   apply(styles.h2); doc.text('Batch Prep'); rule(); apply(styles.body);
+
+  // Safety mini-strip (simple bullets for PDF)
+  const safetyBullets = [
+    'Refrigerate cooked foods within 2 hours.',
+    'Store cooked meals 3–4 days in the fridge; freeze extras.',
+    'Cool in shallow containers for faster chilling.'
+  ];
+  doc.text('Food Safety:'); 
+  doc.list(safetyBullets, { bulletRadius: 2, textIndent: 10, bulletIndent: 5 });
+  doc.moveDown(0.6);
+
+  const titleForDay = (day='') => {
+    const d = String(day).toLowerCase();
+    if (d.startsWith('sun')) return 'Sunday — Main Cook (90–120 min)';
+    if (d.startsWith('thu')) return 'Thursday — Top-Up (30–45 min)';
+    return `${day}`;
+  };
+
   (Array.isArray(batch) ? batch : []).forEach(b => {
-    const steps = Array.isArray(b.steps) ? b.steps.join(' • ') : (b.instructions || '');
-    doc.text(`• ${b.day || ''}: ${steps}`);
+    const title = titleForDay(b.day || '');
+    if (title) { doc.font('Helvetica-Bold').fontSize(12).text(title); }
+    const items = Array.isArray(b.steps) ? b.steps : (b.instructions ? [b.instructions] : []);
+    if (items.length) {
+      doc.font('Helvetica').fontSize(10).list(items, { bulletRadius: 2, textIndent: 10, bulletIndent: 5 });
+    }
+    doc.moveDown(0.4);
   });
 }
 

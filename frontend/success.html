@@ -69,6 +69,17 @@
     @keyframes load{0%{width:0%}50%{width:80%}100%{width:100%}}
     @media (max-width:768px){.container{padding:1rem}.header h1{font-size:2.2rem}}
     .with-sticky{padding-top:5.5rem}
+
+    /* Batch Prep (new) */
+    .note{background:#0f2530;border-left:4px solid #4ecdc4;padding:10px 12px;border-radius:8px;margin:8px 0 14px;font-size:.95rem}
+    .bp details{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;margin:.5rem 0}
+    .bp summary{cursor:pointer;font-weight:700;padding:.7rem 1rem}
+    .bp summary::-webkit-details-marker{display:none}
+    .bp .content{padding:0 1rem 1rem}
+    .bp ul{list-style:none;margin:0;padding:0}
+    .bp li{padding:.45rem 0;border-bottom:1px dashed rgba(255,255,255,.15)}
+    .bp li:last-child{border-bottom:0}
+    .bp input[type="checkbox"]{margin-right:.5rem}
   </style>
 </head>
 <body>
@@ -122,7 +133,7 @@
       <h3 style="margin:.25rem 0 0.5rem">🛒 Grocery List</h3>
       <div id="groceryList" class="nutrition-grid"></div>
       <h3 style="margin:1rem 0 0.5rem">🍱 Batch Prep</h3>
-      <div id="batchPrep" class="code"></div>
+      <div id="batchPrep" class="bp"></div>
 
       <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem">
         <button id="downloadNutrition" class="btn btn-secondary">⬇️ Download Nutrition PDF</button>
@@ -197,6 +208,8 @@
     function hideStickyBar(){ stickyEmailBar.classList.remove('show'); mainContainer.classList.remove('with-sticky'); }
     dismissStickyBtn.addEventListener('click', ()=>{ stickyBarDismissed = true; hideStickyBar(); });
 
+    function escapeHtml(s){ return String(s||'').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+
     async function sendEmail(button){
       const original = button.innerHTML; button.disabled = true; button.innerHTML = '⏳ Sending…';
       const email = (formData.email || '').trim();
@@ -219,6 +232,32 @@
     }
     emailBtn.addEventListener('click', e => sendEmail(e.currentTarget));
     stickyEmailBtn.addEventListener('click', e => sendEmail(e.currentTarget));
+
+    // Render Batch Prep as collapsible checklists
+    function renderBatchPrepUI(batch){
+      const safety = `
+        <div class="note"><strong>Food safety:</strong> Refrigerate within 2 hours. Keep cooked meals 3–4 days in the fridge; freeze extras. Cool in shallow containers.</div>
+      `;
+
+      const toTitle = (day='') => {
+        const d = String(day).toLowerCase();
+        if (d.startsWith('sun')) return '🗓 Sunday — Main Cook (90–120 min)';
+        if (d.startsWith('thu')) return '🗓 Thursday — Top-Up (30–45 min)';
+        return `🗓 ${escapeHtml(day)}`;
+      };
+
+      const sections = (batch || []).map((b, idx) => {
+        const items = (b.steps || []).map(s => `<li><label><input type="checkbox"> ${escapeHtml(s)}</label></li>`).join('');
+        const open = idx === 0 ? ' open' : '';
+        return `
+          <details${open}>
+            <summary>${toTitle(b.day || '')}</summary>
+            <div class="content"><ul>${items}</ul></div>
+          </details>`;
+      }).join('');
+
+      batchPrep.innerHTML = safety + sections;
+    }
 
     // Nutrition renderer: tabs Day 1–7 + toggle all
     function renderNutrition(n){
@@ -297,10 +336,11 @@
         return `<div class="pill">${it.item || it.name}${unit ? ` — <span style="opacity:.85">${unit}</span>` : ''}</div>`;
       }).join('');
 
-      batchPrep.textContent = (n.batch_prep || []).map(b => `• ${b.day}: ${(b.steps || []).join(' • ')}`).join('\n');
+      // Pretty Batch Prep
+      renderBatchPrepUI(n.batch_prep || []);
     }
 
-    // Download nutrition PDF
+    // Download nutrition PDF (uses the one declaration above)
     downloadNutrition.addEventListener('click', async () => {
       if (!nutritionPlan) return alert('Generate the nutrition plan first.');
       const resp = await fetch(`${API_URL}/api/nutrition-pdf`, {
@@ -317,6 +357,7 @@
     // Generate flow
     const stickyEmailBarShowAfter = () => setTimeout(showStickyBar, 400);
 
+    // Use the one generateBtn we already declared
     generateBtn.addEventListener('click', async () => {
       generateBtn.disabled = true; planError.innerHTML = ""; hideStickyBar();
       planCard.style.display = "none"; nutritionCard.style.display = "none"; emailBtn.style.display = "none";
@@ -364,7 +405,7 @@
             allergies: formData.allergies || [],
             budget_level: formData.budget_level || 'normal',
             email: formData.email,
-            sessionId // REQUIRED for server PRO gating
+            sessionId
           };
 
           const nres = await fetch(`${API_URL}/api/nutrition`, {
@@ -381,7 +422,6 @@
           renderNutrition(nPlan);
           stickyEmailBarShowAfter();
         } else {
-          // Base plan → show sticky after workout
           stickyEmailBarShowAfter();
         }
 
@@ -405,7 +445,6 @@
       }
     });
 
-    // Quiet Safari’s noisy unhandledrejection on event targets
     window.addEventListener('unhandledrejection', e => {
       if (String(e.reason || '').includes('TypeError: null is not an object')) { e.preventDefault(); }
     });
