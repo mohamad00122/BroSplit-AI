@@ -34,8 +34,8 @@ app.use(rateLimit({ windowMs: 60_000, limit: 120 }));
 
 // ─── Stripe ───────────────────────────────────────────────────────────────────
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-const PRICE_BASE = process.env.STRIPE_PRICE_BASE || 'price_1RsQJUAhLaqVN2Rssepup9EE'; // $5 Workout-only
-const PRICE_PRO = process.env.STRIPE_PRICE_PRO || 'price_1RsQJUAhLaqVN2Rssepup9EE'; // $15 Workout+Nutrition
+const PRICE_BASE = process.env.STRIPE_PRICE_BASE || 'price_base_5usd_REPLACE'; // $5 Workout-only
+const PRICE_PRO  = process.env.STRIPE_PRICE_PRO  || 'price_pro_15usd_REPLACE'; // $15 Workout+Nutrition
 
 // ─── OpenAI ───────────────────────────────────────────────────────────────────
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -59,7 +59,12 @@ function createStyledDoc({ theme = 'blue' } = {}) {
   const apply = s => doc.font(s.font).fontSize(s.size).fillColor(s.color);
   const rule = () => {
     doc.moveDown(0.5);
-    doc.strokeColor(ruleColor).lineWidth(0.7).moveTo(doc.x, doc.y).lineTo(doc.page.width - doc.page.margins.right, doc.y).stroke();
+    doc
+      .strokeColor(ruleColor)
+      .lineWidth(0.7)
+      .moveTo(doc.x, doc.y)
+      .lineTo(doc.page.width - doc.page.margins.right, doc.y)
+      .stroke();
     doc.moveDown(0.5);
   };
   return { doc, styles, apply, rule };
@@ -175,10 +180,10 @@ function renderNutritionSection({ doc, styles, apply, rule }, plan, userProfile 
     apply(styles.body);
     (d.meals || []).forEach(m => {
       const macros = m.macros ? ` (${m.macros.kcal || 0} kcal • P${m.macros.protein_g || 0}/C${m.macros.carbs_g || 0}/F${m.macros.fat_g || 0})` : '';
-      doc.text(`${m.name || 'Meal'}: ${m.recipe || ''}${macros}`);
+      doc.text(`${m.name || "Meal"}: ${m.recipe || ""}${macros}`);
       (m.ingredients || []).forEach(i => {
-        const qty = i.grams ? `${i.grams} g` : i.ml ? `${i.ml} ml` : i.count ? `${i.count} ct` : (i.qty || '');
-        doc.text(`   · ${i.item}${qty ? ` — ${qty}` : ''}`);
+        const qty = i.grams ? `${i.grams} g` : i.ml ? `${i.ml} ml` : i.count ? `${i.count} ct` : (i.qty || "");
+        doc.text(`   · ${i.item}${qty ? ` — ${qty}` : ""}`);
       });
       doc.moveDown(0.3);
     });
@@ -186,8 +191,7 @@ function renderNutritionSection({ doc, styles, apply, rule }, plan, userProfile 
   });
 
   // Grocery List
-  apply(styles.h2); doc.text('Grocery List'); rule();
-  apply(styles.body);
+  apply(styles.h2); doc.text('Grocery List'); rule(); apply(styles.body);
   (Array.isArray(grocery) ? grocery : []).forEach(it => {
     const item = it.item || it.name || it;
     const unit = it.kg ? `${it.kg} kg` : it.ml ? `${it.ml} ml` : it.count ? `${it.count} ct` : '';
@@ -196,8 +200,7 @@ function renderNutritionSection({ doc, styles, apply, rule }, plan, userProfile 
   doc.addPage();
 
   // Batch Prep
-  apply(styles.h2); doc.text('Batch Prep'); rule();
-  apply(styles.body);
+  apply(styles.h2); doc.text('Batch Prep'); rule(); apply(styles.body);
   (Array.isArray(batch) ? batch : []).forEach(b => {
     const steps = Array.isArray(b.steps) ? b.steps.join(' • ') : (b.instructions || '');
     doc.text(`• ${b.day || ''}: ${steps}`);
@@ -262,7 +265,9 @@ async function requireProSession(sessionId) {
   if (session.payment_status !== 'paid') throw new Error('NOT_PAID');
   // Check line items for the PRO price
   const items = await stripe.checkout.sessions.listLineItems(sessionId, { limit: 10 });
-  const hasPro = items.data.some(li => (li.price && li.price.id === PRICE_PRO) || li.amount_total === 1500 || li.amount_subtotal === 1500);
+  const hasPro = items.data.some(li =>
+    (li.price && li.price.id === PRICE_PRO) || li.amount_total === 1500 || li.amount_subtotal === 1500
+  );
   if (!hasPro) throw new Error('NOT_PRO');
   return session;
 }
@@ -327,7 +332,21 @@ function macroTargets({ weight_kg, kcal, goal, training_load }) {
   return { kcal, protein_g, carbs_g, fat_g, fiber_g, sodium_mg_cap };
 }
 
-// ─── Nutrition Generation (JSON) — now PRO-gated ─────────────────────────────
+// ─── Nutrition Generation (JSON) — PRO-gated + robust JSON handling ──────────
+
+// Rescue parser for edge cases (code fences, stray text)
+function rescueJson(s) {
+  try {
+    const cleaned = String(s || '').replace(/```json|```/g, '').trim();
+    const first = cleaned.indexOf('{');
+    const last  = cleaned.lastIndexOf('}');
+    if (first !== -1 && last !== -1) {
+      return JSON.parse(cleaned.slice(first, last + 1));
+    }
+  } catch {}
+  return null;
+}
+
 app.post('/api/nutrition', genLimiter, async (req, res) => {
   try {
     const input = NutritionInput.parse(req.body);
@@ -337,7 +356,7 @@ app.post('/api/nutrition', genLimiter, async (req, res) => {
     catch (e) {
       if (e.message === 'NO_SESSION') return res.status(401).json({ error: 'Missing sessionId' });
       if (e.message === 'NOT_PAID') return res.status(402).json({ error: 'Payment required' });
-      if (e.message === 'NOT_PRO') return res.status(403).json({ error: 'Nutrition is available with the Pro plan' });
+      if (e.message === 'NOT_PRO')  return res.status(403).json({ error: 'Nutrition is available with the Pro plan' });
       throw e;
     }
 
@@ -346,19 +365,32 @@ app.post('/api/nutrition', genLimiter, async (req, res) => {
     const targets = macroTargets({ weight_kg: input.weight_kg, kcal, goal: input.goal, training_load: input.training_load });
 
     const prompt = makeNutritionPrompt({ input, targets });
+
+    // Strong JSON enforcement
     const completion = await openai.chat.completions.create({
       model: process.env.OPENAI_MODEL || 'gpt-4o',
-      temperature: 0.2,
-      max_tokens: 3000,
+      temperature: 0, // deterministic JSON
+      max_tokens: 3500,
+      // If your OpenAI library/model supports it, this guarantees a JSON object
+      response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: 'You are a sports nutrition assistant. Use the supplied targets verbatim. Respond ONLY with valid JSON.' },
+        { role: 'system', content: 'You are a sports nutrition assistant. Use the supplied targets verbatim. Respond ONLY with valid JSON that conforms to the user request — no prose, no code fences.' },
         { role: 'user', content: prompt }
       ]
     });
 
+    const raw = completion.choices?.[0]?.message?.content ?? '';
     let planJson;
-    try { planJson = JSON.parse(completion.choices[0].message.content); }
-    catch (e) { return res.status(502).json({ error: 'Model returned invalid JSON', raw: completion.choices[0].message.content, targets }); }
+    try {
+      planJson = JSON.parse(raw);
+    } catch {
+      const rescued = rescueJson(raw);
+      if (!rescued) {
+        console.error('Nutrition JSON parse failed. Raw (first 400 chars):', raw.slice(0, 400));
+        return res.status(502).json({ error: 'Model returned invalid JSON', raw, targets });
+      }
+      planJson = rescued;
+    }
 
     res.json({ targets, plan: planJson });
   } catch (err) {
@@ -369,6 +401,7 @@ app.post('/api/nutrition', genLimiter, async (req, res) => {
 });
 
 // ─── Email & PDF Endpoints ───────────────────────────────────────────────────
+// Default: Pro → split PDFs (merge=false). Base → only workout PDF.
 async function sendPlansWithResend({ email, workoutText, nutritionJson, userProfile = {}, merge = false }) {
   if (!email || !workoutText) throw new Error('EMAIL_OR_PLAN_MISSING');
 
@@ -410,7 +443,13 @@ async function sendPlansWithResend({ email, workoutText, nutritionJson, userProf
 app.post('/api/email-plan', async (req, res) => {
   try {
     const { email, plan, nutrition, userProfile = {}, merge } = req.body;
-    await sendPlansWithResend({ email, workoutText: plan, nutritionJson: nutrition, userProfile, merge: merge ?? false });
+    await sendPlansWithResend({
+      email,
+      workoutText: plan,
+      nutritionJson: nutrition,
+      userProfile,
+      merge: merge ?? false // default to split PDFs for Pro
+    });
     res.json({ success: true });
   } catch (err) {
     console.error('❌ Email delivery failed:', err);
@@ -418,7 +457,7 @@ app.post('/api/email-plan', async (req, res) => {
   }
 });
 
-// On-demand: Nutrition-only PDF (legacy)
+// On-demand: Nutrition-only PDF (for the success page "Download Nutrition PDF" button)
 app.post('/api/nutrition-pdf', async (req, res) => {
   try {
     const { plan, userProfile = {} } = req.body;
@@ -432,7 +471,7 @@ app.post('/api/nutrition-pdf', async (req, res) => {
   }
 });
 
-// New: Unified PDF on-demand (for Pro)
+// Optional: Unified PDF on-demand (kept for flexibility)
 app.post('/api/unified-pdf', async (req, res) => {
   try {
     const { workoutText, nutritionJson, userProfile = {} } = req.body;
