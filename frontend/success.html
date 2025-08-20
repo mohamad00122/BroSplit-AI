@@ -217,10 +217,10 @@
         setTimeout(()=> button.innerHTML = original, 2500);
       }finally{ button.disabled = false; }
     }
-    emailBtn.addEventListener('click', e => sendEmail(e.currentTarget));
-    stickyEmailBtn.addEventListener('click', e => sendEmail(e.currentTarget));
+    document.getElementById('emailPlan').addEventListener('click', e => sendEmail(e.currentTarget));
+    document.getElementById('stickyEmailBtn').addEventListener('click', e => sendEmail(e.currentTarget));
 
-    // Nutrition renderer: tabs Day 1–7 + toggle all
+    // Nutrition renderer: tabs Day 1–7 + toggle all + structured batch prep
     function renderNutrition(n){
       if(!n) return;
       const s = n.summary || {};
@@ -287,9 +287,30 @@
         nutritionTabs.appendChild(toggle);
       }
 
+      function renderBatchPrepUI(n){
+        const bp = n.batch_prep || [];
+        if(!Array.isArray(bp) || !bp.length){ batchPrep.textContent = ''; return; }
+
+        batchPrep.innerHTML = bp.map(b => {
+          const sections = Array.isArray(b.sections) ? b.sections : [];
+          if (!sections.length) {
+            const steps = (b.steps || []).map(s => `• ${s}`).join('\n');
+            return `• ${b.day}: ${steps}`;
+          }
+          const secHtml = sections.map(sec => `
+            <div style="margin:.35rem 0">
+              <div style="font-weight:800">${sec.title}</div>
+              ${sec.items?.length ? `<div style="opacity:.85;margin:.1rem 0">Items: ${sec.items.join(', ')}</div>` : ''}
+              <ul style="margin-left:1rem;margin-top:.2rem">${(sec.steps||[]).map(s=>`<li>${s}</li>`).join('')}</ul>
+            </div>
+          `).join('');
+          return `<div style="margin:.5rem 0"><div style="font-weight:900">${b.day}</div>${secHtml}</div>`;
+        }).join('');
+      }
+
       renderDays();
       renderTabs();
-      nutritionCard.style.display = 'block';
+      renderBatchPrepUI(n);
 
       const groceries = (n.grocery_list && n.grocery_list.items) || n.grocery_list || [];
       groceryList.innerHTML = (groceries || []).map(it => {
@@ -297,7 +318,7 @@
         return `<div class="pill">${it.item || it.name}${unit ? ` — <span style="opacity:.85">${unit}</span>` : ''}</div>`;
       }).join('');
 
-      batchPrep.textContent = (n.batch_prep || []).map(b => `• ${b.day}: ${(b.steps || []).join(' • ')}`).join('\n');
+      nutritionCard.style.display = 'block';
     }
 
     // Download nutrition PDF
@@ -372,7 +393,7 @@
             body: JSON.stringify(payload)
           });
           if (nres.status === 401) throw new Error('Session validation missing/expired. Open the success link from Checkout again.');
-          if (nres.status === 402) throw new Error('Payment not captured. If you were charged, contact support.');
+          if (nres.status === 402) throw new Error('Payment not captured.');
           if (nres.status === 403) throw new Error('Nutrition requires the Pro plan.');
           if (!nres.ok) throw new Error("Could not generate nutrition plan.");
 
@@ -381,7 +402,6 @@
           renderNutrition(nPlan);
           stickyEmailBarShowAfter();
         } else {
-          // Base plan → show sticky after workout
           stickyEmailBarShowAfter();
         }
 
