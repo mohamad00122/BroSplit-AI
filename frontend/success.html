@@ -18,7 +18,7 @@
       -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.02em;line-height:1.1}
     .subtitle{font-size:1.1rem;color:#e0e0e0}
 
-    /* Sticky email bar — hidden by default, shown programmatically */
+    /* Sticky email bar */
     .sticky-email-bar{display:none;position:fixed;top:0;left:0;right:0;background:rgba(255,107,107,.95);backdrop-filter:blur(20px);
       border-bottom:1px solid rgba(255,107,107,.3);box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:1000;transform:translateY(-100%);transition:transform .35s ease}
     .sticky-email-bar.show{display:block;animation:slideDownSticky .45s ease-out forwards}
@@ -73,11 +73,11 @@
 <body>
   <div class="bg-gradient"></div>
 
-  <!-- Sticky email bar (hidden until we show it after generation) -->
+  <!-- Sticky email bar -->
   <div id="stickyEmailBar" class="sticky-email-bar">
     <div class="sticky-content">
-      <span class="sticky-text">📧 Don’t lose your plan! Get both PDFs emailed to you.</span>
-      <button id="stickyEmailBtn" class="btn-sticky">Email My PDFs</button>
+      <span class="sticky-text">📧 Don’t lose your plan! Get your PDF emailed to you.</span>
+      <button id="stickyEmailBtn" class="btn-sticky">Email My PDF</button>
       <button id="dismissSticky" class="btn-dismiss">×</button>
     </div>
   </div>
@@ -129,7 +129,7 @@
 
     <!-- Email button -->
     <div style="text-align:center;margin:1rem 0 2rem">
-      <button id="emailPlan" class="btn btn-primary" style="display:none">📧 Email Me My PDFs</button>
+      <button id="emailPlan" class="btn btn-primary" style="display:none">📧 Email Me My PDF</button>
     </div>
   </div>
 
@@ -147,33 +147,36 @@
           <p>Please return to the homepage and try again.</p>
           <a href="index.html" class="btn btn-primary" style="margin-top:1rem">← Back to Start</a></div>
         </div>`;
-      throw new Error("No session_id in URL");
+      throw new Error('No session_id in URL');
     }
 
     // Pull form data + tier
-    let formData = {};
-    let planType = 'workout';
+    let formData = {}; let planType = 'workout';
     try {
       formData = JSON.parse(localStorage.getItem('brosplitForm') || '{}');
       planType = localStorage.getItem('planType') || 'workout';
     } catch {}
 
+    // Adjust sticky text + buttons per plan
+    const stickyTextEl = document.querySelector('.sticky-text');
+    const emailBtn = document.getElementById('emailPlan');
+    const stickyEmailBtn = document.getElementById('stickyEmailBtn');
     if (planType === 'pro') {
       document.getElementById('subtitle').textContent = 'Your personalized training + nutrition plan is ready';
       document.getElementById('successDesc').textContent = 'We’ll generate your workout plan and your macros + meals.';
+      stickyTextEl.textContent = '📧 Don’t lose your plan! Get both PDFs emailed to you.';
+      emailBtn.textContent = '📧 Email Me My PDFs';
+      stickyEmailBtn.textContent = 'Email My PDFs';
     }
 
     // DOM refs
     const mainContainer = document.getElementById('mainContainer');
     const stickyEmailBar = document.getElementById('stickyEmailBar');
-    const stickyEmailBtn = document.getElementById('stickyEmailBtn');
     const dismissStickyBtn = document.getElementById('dismissSticky');
     const planCard = document.getElementById('planContainer');
     const planDiv = document.getElementById('plan');
     const planLoading = document.getElementById('planLoading');
     const planError = document.getElementById('planError');
-    const emailBtn = document.getElementById('emailPlan');
-
     const nutritionCard = document.getElementById('nutritionContainer');
     const nutritionSummary = document.getElementById('nutritionSummary');
     const nutritionGuidelines = document.getElementById('nutritionGuidelines');
@@ -181,9 +184,11 @@
     const groceryList = document.getElementById('groceryList');
     const batchPrep = document.getElementById('batchPrep');
     const downloadNutrition = document.getElementById('downloadNutrition');
+    const generateBtn = document.getElementById('generatePlan');
 
     let stickyBarDismissed = false;
     let nutritionPlan = null;
+    let rawWorkoutPlan = ""; // store raw text for emailing
 
     function showStickyBar(){
       if(!stickyBarDismissed){
@@ -201,8 +206,11 @@
     async function sendEmail(button){
       const original = button.innerHTML; button.disabled = true; button.innerHTML = '⏳ Sending…';
       const email = (formData.email || '').trim();
-      if(!email){ alert("⚠️ No email found. Please go back and enter your email."); button.innerHTML = original; button.disabled = false; return; }
-      const planText = planDiv.innerText || planDiv.textContent || '';
+      if(!email){
+        alert("⚠️ No email found. Please go back and enter your email.");
+        button.innerHTML = original; button.disabled = false; return;
+      }
+      const planText = rawWorkoutPlan || planDiv.innerText || planDiv.textContent || '';
       try{
         const resp = await fetch(`${API_URL}/api/email-plan`, {
           method:'POST',
@@ -219,7 +227,7 @@
         setTimeout(()=> button.innerHTML = original, 2500);
       }finally{ button.disabled = false; }
     }
-    document.getElementById('emailPlan').addEventListener('click', e => sendEmail(e.currentTarget));
+    emailBtn.addEventListener('click', e => sendEmail(e.currentTarget));
     stickyEmailBtn.addEventListener('click', e => sendEmail(e.currentTarget));
 
     // Render Nutrition (handles both .day_plans and .days; shows ALL days)
@@ -289,10 +297,11 @@
     });
 
     // Generate flow with full loading UX
-    document.getElementById('generatePlan').addEventListener('click', async (ev) => {
-      ev.currentTarget.disabled = true; planError.innerHTML = ""; hideStickyBar();
+    generateBtn.addEventListener('click', async () => {
+      // capture the element reference instead of relying on event object
+      generateBtn.disabled = true; planError.innerHTML = ""; hideStickyBar();
       planCard.style.display = "none"; nutritionCard.style.display = "none"; emailBtn.style.display = "none";
-      planDiv.innerHTML = ""; nutritionPlan = null;
+      planDiv.innerHTML = ""; nutritionPlan = null; rawWorkoutPlan = "";
 
       // Phase 1 — Workout
       planLoading.innerHTML = `
@@ -308,13 +317,14 @@
         });
         if (!res.ok) throw new Error("Could not generate workout plan.");
         const { plan } = await res.json();
+        rawWorkoutPlan = plan;
         planDiv.innerHTML = marked.parse(plan);
         planCard.style.display = "block";
         emailBtn.style.display = "inline-flex";
         planCard.scrollIntoView({ behavior: 'smooth' });
 
         // Phase 2 — Nutrition (Pro only)
-        if ((localStorage.getItem('planType') || 'workout') === 'pro') {
+        if (planType === 'pro') {
           planLoading.innerHTML = `
             <div class="card loading-card">
               <div>🥗 Creating your nutrition plan…</div>
@@ -334,17 +344,27 @@
             diet_prefs: formData.diet_prefs || ['none'],
             allergies: formData.allergies || [],
             budget_level: formData.budget_level || 'normal',
-            email: formData.email
+            email: formData.email,
+            sessionId // REQUIRED for server PRO gating
           };
 
           const nres = await fetch(`${API_URL}/api/nutrition`, {
             method:'POST', headers:{'Content-Type':'application/json'},
             body: JSON.stringify(payload)
           });
-          if(!nres.ok) throw new Error("Could not generate nutrition plan.");
+          if (nres.status === 401) throw new Error('Session validation missing/expired. Open the success link from Checkout again.');
+          if (nres.status === 402) throw new Error('Payment not captured. If you were charged, contact support.');
+          if (nres.status === 403) throw new Error('Nutrition requires the Pro plan.');
+          if (!nres.ok) throw new Error("Could not generate nutrition plan.");
+
           const { plan: nPlan } = await nres.json();
           nutritionPlan = nPlan;
           renderNutrition(nPlan);
+
+          setTimeout(showStickyBar, 400);
+        } else {
+          // Base plan → show sticky after workout
+          setTimeout(showStickyBar, 400);
         }
 
         // Done
@@ -352,7 +372,7 @@
           <div class="card loading-card" style="background:rgba(78,205,196,.1);border-color:rgba(78,205,196,.3)">
             <div>✅ All set!</div>
           </div>`;
-        setTimeout(()=> { planLoading.innerHTML = ""; showStickyBar(); }, 1200);
+        setTimeout(()=> { planLoading.innerHTML = ""; }, 1200);
 
       } catch (err) {
         console.error(err);
@@ -364,8 +384,13 @@
             <button onclick="location.reload()" class="btn btn-primary" style="margin-top:1rem">🔄 Try Again</button>
           </div>`;
       } finally {
-        ev.currentTarget.disabled = false;
+        generateBtn.disabled = false; // safe even if an error occurred
       }
+    });
+
+    // Optional: suppress noisy console errors in Safari
+    window.addEventListener('unhandledrejection', e => {
+      if (String(e.reason || '').includes('TypeError: null is not an object')) { e.preventDefault(); }
     });
   </script>
 </body>
