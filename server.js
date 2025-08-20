@@ -34,8 +34,8 @@ app.use(rateLimit({ windowMs: 60_000, limit: 120 }));
 
 // ─── Stripe ───────────────────────────────────────────────────────────────────
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-const PRICE_BASE = process.env.STRIPE_PRICE_BASE || 'price_base_5usd_REPLACE';
-const PRICE_PRO  = process.env.STRIPE_PRICE_PRO  || 'price_pro_15usd_REPLACE';
+const PRICE_BASE = process.env.STRIPE_PRICE_BASE || 'price_1RsQJUAhLaqVN2Rssepup9EE';
+const PRICE_PRO  = process.env.STRIPE_PRICE_PRO  || 'price_1RsQJUAhLaqVN2Rssepup9EE';
 
 // ─── OpenAI ───────────────────────────────────────────────────────────────────
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
