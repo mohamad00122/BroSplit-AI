@@ -40,11 +40,8 @@
     .btn-secondary{background:rgba(255,255,255,.1);color:#e0e0e0;border:1px solid rgba(255,255,255,.2)}
     .btn:disabled{opacity:.6;cursor:not-allowed}
 
-    /* Section headers */
     .section-title{font-size:1.6rem;font-weight:900;margin-bottom:.75rem}
     .muted{color:#cbd5e1}
-
-    /* Workout/Nutrition bodies themed identically */
     .white-card{background:#fff;color:#1f2937;border-radius:16px;padding:1.5rem;border:1px solid #e5e7eb}
     #plan h1{font-size:1.6rem;font-weight:900;margin:0 0 1rem 0;border-bottom:3px solid #ff6b6b;padding-bottom:.75rem}
     #plan h2{font-size:1.25rem;font-weight:800;margin:1.25rem 0 .75rem}
@@ -57,12 +54,16 @@
     .code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.95rem;white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.1);padding:1rem;border-radius:12px}
     .divider{height:2px;background:linear-gradient(90deg,transparent,#4ecdc4,transparent);border:0;margin:1.25rem 0}
 
-    /* Loading */
+    /* Tabs */
+    .tabs { display:flex; flex-wrap:wrap; gap:.5rem; margin:.75rem 0 1rem }
+    .tab { padding:.5rem .9rem; border:1px solid rgba(255,255,255,.2); border-radius:999px; cursor:pointer; background:rgba(255,255,255,.06) }
+    .tab.active { background:#4ecdc4; color:#0b0f12; border-color:transparent; font-weight:800 }
+    .toggle-all { margin-left:auto; background:transparent; border:0; color:#cbd5e1; cursor:pointer }
+
+    /* Loading & responsive */
     .loading-card{text-align:center}
     .progress{height:8px;background:rgba(255,255,255,.15);border-radius:6px;overflow:hidden;margin-top:1rem}
     .bar{height:100%;background:linear-gradient(135deg,#ff6b6b,#ff5252);animation:load 2.2s ease-in-out infinite}
-
-    /* Responsive */
     @keyframes slideDown{from{transform:translateY(-16px);opacity:0}to{transform:translateY(0);opacity:1}}
     @keyframes slideDownSticky{from{transform:translateY(-100%)}to{transform:translateY(0)}}
     @keyframes load{0%{width:0%}50%{width:80%}100%{width:100%}}
@@ -115,6 +116,7 @@
       <div id="nutritionSummary" class="nutrition-grid"></div>
       <div id="nutritionGuidelines" class="code" style="display:none"></div>
       <hr class="divider" />
+      <div class="tabs" id="nutritionTabs"></div>
       <div id="nutritionDays"></div>
       <hr class="divider" />
       <h3 style="margin:.25rem 0 0.5rem">🛒 Grocery List</h3>
@@ -150,14 +152,14 @@
       throw new Error('No session_id in URL');
     }
 
-    // Pull form data + tier
+    // Read form data + tier
     let formData = {}; let planType = 'workout';
     try {
       formData = JSON.parse(localStorage.getItem('brosplitForm') || '{}');
       planType = localStorage.getItem('planType') || 'workout';
     } catch {}
 
-    // Adjust sticky text + buttons per plan
+    // Sticky labels per plan
     const stickyTextEl = document.querySelector('.sticky-text');
     const emailBtn = document.getElementById('emailPlan');
     const stickyEmailBtn = document.getElementById('stickyEmailBtn');
@@ -181,6 +183,7 @@
     const nutritionSummary = document.getElementById('nutritionSummary');
     const nutritionGuidelines = document.getElementById('nutritionGuidelines');
     const nutritionDays = document.getElementById('nutritionDays');
+    const nutritionTabs = document.getElementById('nutritionTabs');
     const groceryList = document.getElementById('groceryList');
     const batchPrep = document.getElementById('batchPrep');
     const downloadNutrition = document.getElementById('downloadNutrition');
@@ -188,33 +191,20 @@
 
     let stickyBarDismissed = false;
     let nutritionPlan = null;
-    let rawWorkoutPlan = ""; // store raw text for emailing
+    let rawWorkoutPlan = "";
 
-    function showStickyBar(){
-      if(!stickyBarDismissed){
-        stickyEmailBar.classList.add('show');
-        mainContainer.classList.add('with-sticky');
-      }
-    }
-    function hideStickyBar(){
-      stickyEmailBar.classList.remove('show');
-      mainContainer.classList.remove('with-sticky');
-    }
+    function showStickyBar(){ if(!stickyBarDismissed){ stickyEmailBar.classList.add('show'); mainContainer.classList.add('with-sticky'); } }
+    function hideStickyBar(){ stickyEmailBar.classList.remove('show'); mainContainer.classList.remove('with-sticky'); }
     dismissStickyBtn.addEventListener('click', ()=>{ stickyBarDismissed = true; hideStickyBar(); });
 
-    // Email (includes both PDFs if nutrition was generated)
     async function sendEmail(button){
       const original = button.innerHTML; button.disabled = true; button.innerHTML = '⏳ Sending…';
       const email = (formData.email || '').trim();
-      if(!email){
-        alert("⚠️ No email found. Please go back and enter your email.");
-        button.innerHTML = original; button.disabled = false; return;
-      }
+      if(!email){ alert("⚠️ No email found. Please go back and enter your email."); button.innerHTML = original; button.disabled = false; return; }
       const planText = rawWorkoutPlan || planDiv.innerText || planDiv.textContent || '';
       try{
         const resp = await fetch(`${API_URL}/api/email-plan`, {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
+          method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ email, plan: planText, nutrition: nutritionPlan })
         });
         if(!resp.ok) throw new Error('Server rejected the email.');
@@ -230,7 +220,7 @@
     emailBtn.addEventListener('click', e => sendEmail(e.currentTarget));
     stickyEmailBtn.addEventListener('click', e => sendEmail(e.currentTarget));
 
-    // Render Nutrition (handles both .day_plans and .days; shows ALL days)
+    // Nutrition renderer: tabs Day 1–7 + toggle all
     function renderNutrition(n){
       if(!n) return;
       const s = n.summary || {};
@@ -246,14 +236,16 @@
 
       const g = n.guidelines || {};
       const gText = [
-        g.protein_per_meal_rule ? `• Protein per meal: ${g.protein_per_meal_rule}` : null,
-        g.pre_post ? `• Pre/Post training: ${g.pre_post}` : null,
-        g.notes ? `• Notes: ${g.notes}` : null
+        g.protein_per_meal_rule && `• Protein per meal: ${g.protein_per_meal_rule}`,
+        g.pre_post && `• Pre/Post training: ${g.pre_post}`,
+        g.notes && `• Notes: ${g.notes}`
       ].filter(Boolean).join('\n');
       if (gText) { nutritionGuidelines.style.display = 'block'; nutritionGuidelines.textContent = gText; }
 
       const days = n.day_plans || n.days || [];
-      nutritionDays.innerHTML = (days || []).map((d, i) => {
+      let showAll = false, active = 0;
+
+      function renderOne(d, i){
         const kcal = d.total_kcal || s.calories || s.kcal || '';
         const meals = (d.meals || []).map(m => {
           const ing = (m.ingredients || []).map(i => {
@@ -263,13 +255,41 @@
           const macro = m.macros ? ` (${m.macros.kcal || 0} kcal • P${m.macros.protein_g || 0}/C${m.macros.carbs_g || 0}/F${m.macros.fat_g || 0})` : '';
           return `\n${m.name || 'Meal'}: ${m.recipe || ''}${macro}\n${ing}`;
         }).join('\n');
+
         return `
           <div class="white-card" style="margin:.75rem 0">
             <div style="font-weight:800;margin-bottom:.25rem">Day ${d.day || (i+1)} — ${kcal} kcal</div>
-            <div class="code">${meals.trim()}</div>
-          </div>
-        `;
-      }).join('');
+            <div class="code">${(meals || '—').trim()}</div>
+          </div>`;
+      }
+
+      function renderDays(){
+        if (showAll) {
+          nutritionDays.innerHTML = days.map((d,i)=>renderOne(d,i)).join('');
+        } else {
+          nutritionDays.innerHTML = renderOne(days[active], active);
+        }
+      }
+
+      function renderTabs(){
+        nutritionTabs.innerHTML = '';
+        days.forEach((d, i) => {
+          const b = document.createElement('button');
+          b.className = 'tab' + (i===active && !showAll ? ' active' : '');
+          b.textContent = `Day ${d.day || (i+1)}`;
+          b.onclick = () => { active = i; showAll = false; renderDays(); renderTabs(); };
+          nutritionTabs.appendChild(b);
+        });
+        const toggle = document.createElement('button');
+        toggle.className = 'toggle-all';
+        toggle.textContent = showAll ? 'Show one day' : 'Show all days';
+        toggle.onclick = () => { showAll = !showAll; renderDays(); renderTabs(); };
+        nutritionTabs.appendChild(toggle);
+      }
+
+      renderDays();
+      renderTabs();
+      nutritionCard.style.display = 'block';
 
       const groceries = (n.grocery_list && n.grocery_list.items) || n.grocery_list || [];
       groceryList.innerHTML = (groceries || []).map(it => {
@@ -278,8 +298,6 @@
       }).join('');
 
       batchPrep.textContent = (n.batch_prep || []).map(b => `• ${b.day}: ${(b.steps || []).join(' • ')}`).join('\n');
-
-      nutritionCard.style.display = 'block';
     }
 
     // Download nutrition PDF
@@ -296,9 +314,10 @@
       setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
     });
 
-    // Generate flow with full loading UX
+    // Generate flow
+    const stickyEmailBarShowAfter = () => setTimeout(showStickyBar, 400);
+
     generateBtn.addEventListener('click', async () => {
-      // capture the element reference instead of relying on event object
       generateBtn.disabled = true; planError.innerHTML = ""; hideStickyBar();
       planCard.style.display = "none"; nutritionCard.style.display = "none"; emailBtn.style.display = "none";
       planDiv.innerHTML = ""; nutritionPlan = null; rawWorkoutPlan = "";
@@ -360,14 +379,12 @@
           const { plan: nPlan } = await nres.json();
           nutritionPlan = nPlan;
           renderNutrition(nPlan);
-
-          setTimeout(showStickyBar, 400);
+          stickyEmailBarShowAfter();
         } else {
           // Base plan → show sticky after workout
-          setTimeout(showStickyBar, 400);
+          stickyEmailBarShowAfter();
         }
 
-        // Done
         planLoading.innerHTML = `
           <div class="card loading-card" style="background:rgba(78,205,196,.1);border-color:rgba(78,205,196,.3)">
             <div>✅ All set!</div>
@@ -384,11 +401,11 @@
             <button onclick="location.reload()" class="btn btn-primary" style="margin-top:1rem">🔄 Try Again</button>
           </div>`;
       } finally {
-        generateBtn.disabled = false; // safe even if an error occurred
+        generateBtn.disabled = false;
       }
     });
 
-    // Optional: suppress noisy console errors in Safari
+    // Quiet Safari’s noisy unhandledrejection on event targets
     window.addEventListener('unhandledrejection', e => {
       if (String(e.reason || '').includes('TypeError: null is not an object')) { e.preventDefault(); }
     });

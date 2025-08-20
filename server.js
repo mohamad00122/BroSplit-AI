@@ -1,7 +1,7 @@
 // File: server.js (BroSplit AI)
-// Focus: split PDFs for Pro (workout + nutrition), single PDF for Base (workout only) + Pro gating for nutrition
+// Focus: split PDFs for Pro (workout + nutrition), single PDF for Base (workout only)
+// + robust JSON + auto-repair to ensure 7-day nutrition with N meals/day
 
-// ─── Imports & Configuration ──────────────────────────────────────────────────
 import 'dotenv/config';
 import express from 'express';
 import bodyParser from 'body-parser';
@@ -21,7 +21,7 @@ import { Resend } from 'resend';
 
 // —— ESM __dirname shim ————————————————————————————————————————————————
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname  = path.dirname(__filename);
 
 dotenv.config();
 
@@ -34,8 +34,8 @@ app.use(rateLimit({ windowMs: 60_000, limit: 120 }));
 
 // ─── Stripe ───────────────────────────────────────────────────────────────────
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-const PRICE_BASE = process.env.STRIPE_PRICE_BASE || 'price_1RsQJUAhLaqVN2Rssepup9EE'; // $5 Workout-only
-const PRICE_PRO  = process.env.STRIPE_PRICE_PRO  || 'price_1RsQJUAhLaqVN2Rssepup9EE'; // $15 Workout+Nutrition
+const PRICE_BASE = process.env.STRIPE_PRICE_BASE || 'price_base_5usd_REPLACE';
+const PRICE_PRO  = process.env.STRIPE_PRICE_PRO  || 'price_pro_15usd_REPLACE';
 
 // ─── OpenAI ───────────────────────────────────────────────────────────────────
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -44,7 +44,7 @@ const genLimiter = rateLimit({ windowMs: 60_000, limit: 12 });
 // ─── Resend (email) ───────────────────────────────────────────────────────────
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// ─── Helpers: PDF infra (shared theme + renderers) ────────────────────────────
+// ─── PDF helpers ──────────────────────────────────────────────────────────────
 function createStyledDoc({ theme = 'blue' } = {}) {
   const color = theme === 'teal' ? '#0ea5e9' : '#2563eb';
   const subColor = '#111827';
@@ -59,12 +59,7 @@ function createStyledDoc({ theme = 'blue' } = {}) {
   const apply = s => doc.font(s.font).fontSize(s.size).fillColor(s.color);
   const rule = () => {
     doc.moveDown(0.5);
-    doc
-      .strokeColor(ruleColor)
-      .lineWidth(0.7)
-      .moveTo(doc.x, doc.y)
-      .lineTo(doc.page.width - doc.page.margins.right, doc.y)
-      .stroke();
+    doc.strokeColor(ruleColor).lineWidth(0.7).moveTo(doc.x, doc.y).lineTo(doc.page.width - doc.page.margins.right, doc.y).stroke();
     doc.moveDown(0.5);
   };
   return { doc, styles, apply, rule };
@@ -83,8 +78,7 @@ function addPageNumbersAndEnd(doc, smallStyle) {
 
 function parseWorkoutPlanText(planText) {
   const lines = (planText || '').replace(/\*\*/g, '').split(/\r?\n/).map(l => l.trim());
-  const weeks = [];
-  let currentWeek = null, currentDay = null;
+  const weeks = []; let currentWeek = null, currentDay = null;
   for (const line of lines) {
     if (!line) continue;
     const w = line.match(/^Week\s+(\d+)/i);
@@ -97,7 +91,6 @@ function parseWorkoutPlanText(planText) {
 }
 
 function renderWorkoutSection({ doc, styles, apply, rule }, planText, userProfile = {}) {
-  // Cover
   apply(styles.h1); doc.text('Your Personal 6-Week Program', { align: 'center' }); doc.moveDown(0.5);
   apply(styles.body); doc.text(`Hey ${userProfile.name || 'Athlete'} — let’s get to work.`, { align: 'center' });
   try {
@@ -106,7 +99,6 @@ function renderWorkoutSection({ doc, styles, apply, rule }, planText, userProfil
   } catch {}
   doc.addPage();
 
-  // Pro Tips
   apply(styles.h2); doc.text('Pro Tips'); rule();
   apply(styles.body);
   [
@@ -117,7 +109,6 @@ function renderWorkoutSection({ doc, styles, apply, rule }, planText, userProfil
   ].forEach(t => doc.text(`• ${t}`, { indent: 18 }));
   doc.addPage();
 
-  // Weeks / Days
   const weeks = parseWorkoutPlanText(planText).slice(0, 6);
   weeks.forEach(week => {
     apply(styles.h2); doc.text(`Week ${week.number}`); rule();
@@ -130,7 +121,6 @@ function renderWorkoutSection({ doc, styles, apply, rule }, planText, userProfil
     doc.addPage();
   });
 
-  // Outro
   apply(styles.h2); doc.text('Stay Consistent'); rule();
   apply(styles.body); doc.text('Track workouts & recovery. You’ve got this!');
 }
@@ -143,15 +133,12 @@ function renderNutritionSection({ doc, styles, apply, rule }, plan, userProfile 
   const grocery = (nPlan.grocery_list && nPlan.grocery_list.items) || nPlan.grocery_list || [];
   const batch = nPlan.batch_prep || [];
 
-  // Cover
   doc.addPage();
   apply(styles.h1); doc.text('Your Personalized Nutrition Plan', { align: 'center' }); doc.moveDown(0.5);
   apply(styles.body); doc.text(`Prepared for ${userProfile.name || 'Athlete'}`, { align: 'center' });
   doc.addPage();
 
-  // Daily Targets
-  apply(styles.h2); doc.text('Daily Targets'); rule();
-  apply(styles.body);
+  apply(styles.h2); doc.text('Daily Targets'); rule(); apply(styles.body);
   const chips = [
     `Calories: ${summary.calories || summary.kcal || '—'} kcal`,
     `Protein: ${summary.protein_g ?? '—'} g`,
@@ -164,15 +151,12 @@ function renderNutritionSection({ doc, styles, apply, rule }, plan, userProfile 
   chips.forEach(c => doc.text(`• ${c}`));
   doc.addPage();
 
-  // Guidelines
-  apply(styles.h2); doc.text('Guidelines'); rule();
-  apply(styles.body);
+  apply(styles.h2); doc.text('Guidelines'); rule(); apply(styles.body);
   if (guidelines.protein_per_meal_rule) doc.text(`• Protein/meal: ${guidelines.protein_per_meal_rule}`);
-  if (guidelines.pre_post) doc.text(`• Pre/Post training: ${guidelines.pre_post}`);
-  if (guidelines.notes) doc.text(`• Notes: ${guidelines.notes}`);
+  if (guidelines.pre_post)            doc.text(`• Pre/Post training: ${guidelines.pre_post}`);
+  if (guidelines.notes)               doc.text(`• Notes: ${guidelines.notes}`);
   doc.addPage();
 
-  // Day plans
   (Array.isArray(days) ? days : []).forEach((d, idx) => {
     apply(styles.h2);
     const kcal = d.total_kcal || summary.calories || summary.kcal || '';
@@ -180,17 +164,16 @@ function renderNutritionSection({ doc, styles, apply, rule }, plan, userProfile 
     apply(styles.body);
     (d.meals || []).forEach(m => {
       const macros = m.macros ? ` (${m.macros.kcal || 0} kcal • P${m.macros.protein_g || 0}/C${m.macros.carbs_g || 0}/F${m.macros.fat_g || 0})` : '';
-      doc.text(`${m.name || "Meal"}: ${m.recipe || ""}${macros}`);
+      doc.text(`${m.name || 'Meal'}: ${m.recipe || ''}${macros}`);
       (m.ingredients || []).forEach(i => {
-        const qty = i.grams ? `${i.grams} g` : i.ml ? `${i.ml} ml` : i.count ? `${i.count} ct` : (i.qty || "");
-        doc.text(`   · ${i.item}${qty ? ` — ${qty}` : ""}`);
+        const qty = i.grams ? `${i.grams} g` : i.ml ? `${i.ml} ml` : i.count ? `${i.count} ct` : (i.qty || '');
+        doc.text(`   · ${i.item}${qty ? ` — ${qty}` : ''}`);
       });
       doc.moveDown(0.3);
     });
     doc.addPage();
   });
 
-  // Grocery List
   apply(styles.h2); doc.text('Grocery List'); rule(); apply(styles.body);
   (Array.isArray(grocery) ? grocery : []).forEach(it => {
     const item = it.item || it.name || it;
@@ -199,7 +182,6 @@ function renderNutritionSection({ doc, styles, apply, rule }, plan, userProfile 
   });
   doc.addPage();
 
-  // Batch Prep
   apply(styles.h2); doc.text('Batch Prep'); rule(); apply(styles.body);
   (Array.isArray(batch) ? batch : []).forEach(b => {
     const steps = Array.isArray(b.steps) ? b.steps.join(' • ') : (b.instructions || '');
@@ -213,14 +195,12 @@ function generateWorkoutPDF(planText, userProfile = {}) {
   addPageNumbersAndEnd(kit.doc, kit.styles.small);
   return kit.doc;
 }
-
 function generateNutritionPDF(nPlan, userProfile = {}) {
   const kit = createStyledDoc({ theme: 'blue' });
   renderNutritionSection(kit, nPlan, userProfile);
   addPageNumbersAndEnd(kit.doc, kit.styles.small);
   return kit.doc;
 }
-
 function generateUnifiedPDF(workoutText, nutritionJson, userProfile = {}) {
   const kit = createStyledDoc({ theme: 'blue' });
   renderWorkoutSection(kit, workoutText, userProfile);
@@ -229,18 +209,14 @@ function generateUnifiedPDF(workoutText, nutritionJson, userProfile = {}) {
   return kit.doc;
 }
 
-// ─── Utility: turn PDF stream → Buffer ───────────────────────────────────────
 const toBuffer = (doc) => new Promise((resolve, reject) => {
-  const bufs = [];
-  doc.on('data', c => bufs.push(c));
-  doc.on('end', () => resolve(Buffer.concat(bufs)));
-  doc.on('error', reject);
+  const bufs = []; doc.on('data', c => bufs.push(c)); doc.on('end', () => resolve(Buffer.concat(bufs))); doc.on('error', reject);
 });
 
 // ─── Checkout ────────────────────────────────────────────────────────────────
 app.post('/api/checkout', async (req, res) => {
   try {
-    const planType = (req.body.planType || 'workout').toLowerCase(); // 'workout' or 'pro'
+    const planType = (req.body.planType || 'workout').toLowerCase();
     const price = planType === 'pro' ? PRICE_PRO : PRICE_BASE;
 
     const session = await stripe.checkout.sessions.create({
@@ -258,12 +234,11 @@ app.post('/api/checkout', async (req, res) => {
   }
 });
 
-// Helper: verify Pro purchase for nutrition endpoints
+// ─── Stripe session check ────────────────────────────────────────────────────
 async function requireProSession(sessionId) {
   if (!sessionId) throw new Error('NO_SESSION');
   const session = await stripe.checkout.sessions.retrieve(sessionId);
   if (session.payment_status !== 'paid') throw new Error('NOT_PAID');
-  // Check line items for the PRO price
   const items = await stripe.checkout.sessions.listLineItems(sessionId, { limit: 10 });
   const hasPro = items.data.some(li =>
     (li.price && li.price.id === PRICE_PRO) || li.amount_total === 1500 || li.amount_subtotal === 1500
@@ -272,7 +247,7 @@ async function requireProSession(sessionId) {
   return session;
 }
 
-// ─── AI Plan Generation (Workout) ────────────────────────────────────────────
+// ─── Workout plan generation ─────────────────────────────────────────────────
 app.post('/api/generate-plan', genLimiter, async (req, res) => {
   try {
     const { sessionId, daysPerWeek, equipment, injuries, experience, goal, dislikes, focusMuscle, age, sex, bodyweight, lifts } = req.body;
@@ -298,60 +273,105 @@ app.post('/api/generate-plan', genLimiter, async (req, res) => {
   }
 });
 
-// ─── Nutrition Calculations ──────────────────────────────────────────────────
+// ─── Nutrition input + math ──────────────────────────────────────────────────
 const NutritionInput = z.object({
-  sex: z.enum(['male', 'female']),
+  sex: z.enum(['male','female']),
   age: z.number().int().min(13).max(90),
   height_cm: z.number().min(120).max(230),
   weight_kg: z.number().min(35).max(250),
-  activity: z.enum(['sedentary', 'light', 'moderate', 'very_active']),
-  goal: z.enum(['cut', 'recomp', 'gain']),
-  training_load: z.enum(['light', 'moderate', 'high']),
+  activity: z.enum(['sedentary','light','moderate','very_active']),
+  goal: z.enum(['cut','recomp','gain']),
+  training_load: z.enum(['light','moderate','high']),
   meals_per_day: z.number().int().min(3).max(6).default(4),
   cuisine_prefs: z.array(z.string()).default([]),
-  diet_prefs: z.array(z.enum(['none', 'vegetarian', 'vegan', 'pescatarian', 'halal', 'kosher', 'dairy_free', 'gluten_free'])).default(['none']),
+  diet_prefs: z.array(z.enum(['none','vegetarian','vegan','pescatarian','halal','kosher','dairy_free','gluten_free'])).default(['none']),
   allergies: z.array(z.string()).default([]),
-  budget_level: z.enum(['tight', 'normal', 'flex']).default('normal'),
+  budget_level: z.enum(['tight','normal','flex']).default('normal'),
   name: z.string().optional(),
   email: z.string().email().optional(),
   sessionId: z.string().optional()
 });
 
-const AF = { sedentary: 1.2, light: 1.375, moderate: 1.55, very_active: 1.725 };
-function mifflin({ sex, age, height_cm, weight_kg }) { return 10 * weight_kg + 6.25 * height_cm - 5 * age + (sex === 'male' ? 5 : -161); }
+const AF = { sedentary:1.2, light:1.375, moderate:1.55, very_active:1.725 };
+function mifflin({ sex, age, height_cm, weight_kg }) { return 10*weight_kg + 6.25*height_cm - 5*age + (sex === 'male' ? 5 : -161); }
 function calorieGoal(rmr, activity, goal) { const tdee = rmr * AF[activity]; const adj = goal === 'cut' ? 0.80 : goal === 'gain' ? 1.12 : 0.95; return Math.round(tdee * adj); }
 function macroTargets({ weight_kg, kcal, goal, training_load }) {
   const protein_g = Math.round((goal === 'cut' ? 2.2 : 1.8) * weight_kg);
   let fat_g = Math.round((kcal * 0.30) / 9);
-  const band = training_load === 'high' ? [8, 10] : training_load === 'moderate' ? [5, 7] : [3, 5];
+  const band = training_load === 'high' ? [8,10] : training_load === 'moderate' ? [5,7] : [3,5];
   const minCarb_g = Math.round(band[0] * weight_kg);
-  let carbs_g = Math.round((kcal - (protein_g * 4 + fat_g * 9)) / 4);
-  if (carbs_g < minCarb_g) { fat_g = Math.round((kcal * 0.22) / 9); carbs_g = Math.round((kcal - (protein_g * 4 + fat_g * 9)) / 4); }
+  let carbs_g = Math.round((kcal - (protein_g*4 + fat_g*9)) / 4);
+  if (carbs_g < minCarb_g) { fat_g = Math.round((kcal * 0.22) / 9); carbs_g = Math.round((kcal - (protein_g*4 + fat_g*9)) / 4); }
   const fiber_g = Math.round((kcal / 1000) * 14);
   const sodium_mg_cap = 2300;
   return { kcal, protein_g, carbs_g, fat_g, fiber_g, sodium_mg_cap };
 }
 
-// ─── Nutrition Generation (JSON) — PRO-gated + robust JSON handling ──────────
-
-// Rescue parser for edge cases (code fences, stray text)
+// ─── Nutrition JSON guards/repair ────────────────────────────────────────────
 function rescueJson(s) {
   try {
     const cleaned = String(s || '').replace(/```json|```/g, '').trim();
-    const first = cleaned.indexOf('{');
-    const last  = cleaned.lastIndexOf('}');
-    if (first !== -1 && last !== -1) {
-      return JSON.parse(cleaned.slice(first, last + 1));
-    }
+    const first = cleaned.indexOf('{'); const last = cleaned.lastIndexOf('}');
+    if (first !== -1 && last !== -1) return JSON.parse(cleaned.slice(first, last + 1));
   } catch {}
   return null;
 }
+function needsRepair(plan, mealsPerDay) {
+  const days = plan?.day_plans || plan?.days || [];
+  if (!Array.isArray(days) || days.length < 7) return true;
+  return days.some(d => !Array.isArray(d.meals) || d.meals.length < mealsPerDay);
+}
+async function expandPlanWithModel({ basePlan, targets, mealsPerDay }) {
+  const messages = [
+    { role: 'system', content: 'Return ONLY strict JSON with keys: summary, guidelines, day_plans, grocery_list, batch_prep.' },
+    { role: 'user', content:
+`Expand/repair this to a complete 7-day plan.
+- Use these daily targets: ${JSON.stringify(targets)}
+- EXACTLY ${mealsPerDay} meals per day.
+- Keep fields: day, total_kcal, meals[{name, recipe, macros{kcal,protein_g,carbs_g,fat_g}, ingredients[{item, grams?, ml?, count?, qty?}]}].
+- Keep a simple grocery_list and batch_prep.
+JSON:\n${JSON.stringify(basePlan)}` }
+  ];
+  const completion = await openai.chat.completions.create({
+    model: process.env.OPENAI_MODEL || 'gpt-4o',
+    temperature: 0,
+    max_tokens: 3500,
+    response_format: { type: 'json_object' },
+    messages
+  });
+  return JSON.parse(completion.choices[0].message.content);
+}
+function expandProgrammatically(plan, mealsPerDay) {
+  const out = JSON.parse(JSON.stringify(plan || {}));
+  let days = Array.isArray(out.day_plans) ? out.day_plans : (Array.isArray(out.days) ? out.days : []);
+  if (!Array.isArray(days)) days = [];
+  if (days.length === 0) days.push({ day: 1, total_kcal: out?.summary?.calories || out?.summary?.kcal || 0, meals: [] });
+  // Ensure meals per day
+  days.forEach(d => {
+    d.meals = Array.isArray(d.meals) ? d.meals : [];
+    while (d.meals.length < mealsPerDay) {
+      const src = d.meals[d.meals.length - 1] || { name: 'Meal', recipe: 'Protein + carb + veg', macros: { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 }, ingredients: [] };
+      d.meals.push(JSON.parse(JSON.stringify(src)));
+    }
+  });
+  while (days.length < 7) {
+    const base = days[days.length - 1] || days[0];
+    const clone = JSON.parse(JSON.stringify(base));
+    clone.day = days.length + 1;
+    if (clone.meals && clone.meals.length > 1) clone.meals.push(clone.meals.shift());
+    days.push(clone);
+  }
+  out.day_plans = days;
+  delete out.days;
+  return out;
+}
 
+// ─── Nutrition generation (PRO-gated) ────────────────────────────────────────
 app.post('/api/nutrition', genLimiter, async (req, res) => {
   try {
     const input = NutritionInput.parse(req.body);
 
-    // Require paid PRO session
+    // PRO gate
     try { await requireProSession(input.sessionId); }
     catch (e) {
       if (e.message === 'NO_SESSION') return res.status(401).json({ error: 'Missing sessionId' });
@@ -366,33 +386,46 @@ app.post('/api/nutrition', genLimiter, async (req, res) => {
 
     const prompt = makeNutritionPrompt({ input, targets });
 
-    // Strong JSON enforcement
     const completion = await openai.chat.completions.create({
       model: process.env.OPENAI_MODEL || 'gpt-4o',
-      temperature: 0, // deterministic JSON
+      temperature: 0,
       max_tokens: 3500,
-      // If your OpenAI library/model supports it, this guarantees a JSON object
       response_format: { type: 'json_object' },
       messages: [
-        { role: 'system', content: 'You are a sports nutrition assistant. Use the supplied targets verbatim. Respond ONLY with valid JSON that conforms to the user request — no prose, no code fences.' },
+        { role: 'system', content: 'You are a sports nutrition assistant. Use the supplied targets verbatim. Respond ONLY with valid JSON — no prose, no code fences.' },
         { role: 'user', content: prompt }
       ]
     });
 
     const raw = completion.choices?.[0]?.message?.content ?? '';
     let planJson;
-    try {
-      planJson = JSON.parse(raw);
-    } catch {
-      const rescued = rescueJson(raw);
-      if (!rescued) {
-        console.error('Nutrition JSON parse failed. Raw (first 400 chars):', raw.slice(0, 400));
-        return res.status(502).json({ error: 'Model returned invalid JSON', raw, targets });
-      }
-      planJson = rescued;
+    try { planJson = JSON.parse(raw); }
+    catch { planJson = rescueJson(raw); }
+
+    if (!planJson) {
+      console.error('Nutrition JSON parse failed. Raw (first 400 chars):', raw.slice(0, 400));
+      return res.status(502).json({ error: 'Model returned invalid JSON', raw, targets });
     }
 
-    res.json({ targets, plan: planJson });
+    // Enforce 7 days and EXACT meals/day selected by user
+    const mealsPerDay = Number(input.meals_per_day || 4);
+    let finalPlan = planJson;
+    if (needsRepair(finalPlan, mealsPerDay)) {
+      try {
+        finalPlan = await expandPlanWithModel({ basePlan: finalPlan, targets, mealsPerDay });
+      } catch {
+        console.warn('Model repair failed — falling back to programmatic expansion.');
+        finalPlan = expandProgrammatically(finalPlan, mealsPerDay);
+      }
+    }
+
+    // Persist meals/day into summary if missing
+    finalPlan.summary = finalPlan.summary || {};
+    if (typeof finalPlan.summary.meals_per_day === 'undefined') {
+      finalPlan.summary.meals_per_day = mealsPerDay;
+    }
+
+    res.json({ targets, plan: finalPlan });
   } catch (err) {
     console.error('Nutrition generation error:', err);
     if (err instanceof z.ZodError) return res.status(400).json({ error: 'Invalid nutrition input', details: err.errors });
@@ -400,12 +433,10 @@ app.post('/api/nutrition', genLimiter, async (req, res) => {
   }
 });
 
-// ─── Email & PDF Endpoints ───────────────────────────────────────────────────
-// Default: Pro → split PDFs (merge=false). Base → only workout PDF.
+// ─── Email & PDFs ────────────────────────────────────────────────────────────
 async function sendPlansWithResend({ email, workoutText, nutritionJson, userProfile = {}, merge = false }) {
   if (!email || !workoutText) throw new Error('EMAIL_OR_PLAN_MISSING');
 
-  // If nutrition is present and merge==true → single combined PDF
   if (nutritionJson && merge) {
     const uDoc = generateUnifiedPDF(workoutText, nutritionJson, userProfile);
     const uBuf = await toBuffer(uDoc);
@@ -419,7 +450,6 @@ async function sendPlansWithResend({ email, workoutText, nutritionJson, userProf
     return;
   }
 
-  // Otherwise send as separate attachments (workout only, or workout+nutrition)
   const wDoc = generateWorkoutPDF(workoutText, userProfile);
   const wBuf = await toBuffer(wDoc);
   const attachments = [{ filename: 'BroSplit-Workout-Plan.pdf', content: wBuf.toString('base64'), type: 'application/pdf' }];
@@ -439,17 +469,10 @@ async function sendPlansWithResend({ email, workoutText, nutritionJson, userProf
   });
 }
 
-// Email endpoint
 app.post('/api/email-plan', async (req, res) => {
   try {
     const { email, plan, nutrition, userProfile = {}, merge } = req.body;
-    await sendPlansWithResend({
-      email,
-      workoutText: plan,
-      nutritionJson: nutrition,
-      userProfile,
-      merge: merge ?? false // default to split PDFs for Pro
-    });
+    await sendPlansWithResend({ email, workoutText: plan, nutritionJson: nutrition, userProfile, merge: merge ?? false });
     res.json({ success: true });
   } catch (err) {
     console.error('❌ Email delivery failed:', err);
@@ -457,7 +480,6 @@ app.post('/api/email-plan', async (req, res) => {
   }
 });
 
-// On-demand: Nutrition-only PDF (for the success page "Download Nutrition PDF" button)
 app.post('/api/nutrition-pdf', async (req, res) => {
   try {
     const { plan, userProfile = {} } = req.body;
@@ -471,7 +493,6 @@ app.post('/api/nutrition-pdf', async (req, res) => {
   }
 });
 
-// Optional: Unified PDF on-demand (kept for flexibility)
 app.post('/api/unified-pdf', async (req, res) => {
   try {
     const { workoutText, nutritionJson, userProfile = {} } = req.body;
@@ -485,7 +506,7 @@ app.post('/api/unified-pdf', async (req, res) => {
   }
 });
 
-// ─── Health & Server ─────────────────────────────────────────────────────────
+// ─── Health ──────────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
 const PORT = process.env.PORT || 4000;
